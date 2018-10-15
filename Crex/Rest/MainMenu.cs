@@ -1,0 +1,31 @@
+﻿using System.Collections.Generic;
+
+namespace Crex.Rest
+{
+    public class MainMenu
+    {
+        /// <summary>
+        /// Gets or sets the background image.
+        /// </summary>
+        /// <value>
+        /// The background image URL.
+        /// </value>
+        public UrlSet BackgroundImage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the menu buttons.
+        /// </summary>
+        /// <value>
+        /// The menu buttons.
+        /// </value>
+        public List<MenuButton> Buttons { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required crex version.
+        /// </summary>
+        /// <value>
+        /// The required crex version.
+        /// </value>
+        public int? RequiredCrexVersion { get; set; }
+    }
+}
