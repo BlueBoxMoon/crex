@@ -28,6 +28,18 @@ namespace Crex.Android.Widgets
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is running.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is running; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsRunning { get; private set; }
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
@@ -60,16 +72,24 @@ namespace Crex.Android.Widgets
         /// </summary>
         public void Start()
         {
-            imageView.Visibility = ViewStates.Invisible;
-
             //
             // Setup a timer that will show the spinner after the delay.
             //
             lock ( this )
             {
+                if ( IsRunning )
+                {
+                    return;
+                }
+
+                imageView.Visibility = ViewStates.Invisible;
+
+                IsRunning = true;
+
                 if ( autoShowTimer != null )
                 {
                     autoShowTimer.Enabled = false;
+                    autoShowTimer.Dispose();
                 }
 
                 autoShowTimer = new Timer( Crex.Application.Current.Config.LoadingSpinnerDelay.Value );
@@ -98,14 +118,7 @@ namespace Crex.Android.Widgets
                     autoShowTimer.Enabled = false;
                     autoShowTimer = null;
 
-                    ClearAnimation();
-
-                    foreach ( Action a in _stopActions )
-                    {
-                        a();
-                    }
-
-                    _stopActions.Clear();
+                    Stopped();
                 }
                 else if ( imageView.Animation != null )
                 {
@@ -125,6 +138,23 @@ namespace Crex.Android.Widgets
             }
         }
 
+        /// <summary>
+        /// We have entered the stopped state. Run actions and update flags.
+        /// </summary>
+        private void Stopped()
+        {
+            ClearAnimation();
+
+            foreach ( Action a in _stopActions )
+            {
+                a();
+            }
+
+            _stopActions.Clear();
+
+            IsRunning = false;
+        }
+
         #endregion
 
         #region Events
@@ -136,16 +166,14 @@ namespace Crex.Android.Widgets
         /// <param name="e">The <see cref="Animation.AnimationEndEventArgs"/> instance containing the event data.</param>
         private void fadeAnimation_AnimationEnd( object sender, Animation.AnimationEndEventArgs e )
         {
-            ClearAnimation();
-
             lock ( this )
             {
-                foreach ( Action a in _stopActions )
+                if ( !IsRunning )
                 {
-                    a();
+                    return;
                 }
 
-                _stopActions.Clear();
+                Stopped();
             }
         }
 
@@ -161,6 +189,11 @@ namespace Crex.Android.Widgets
                 if ( autoShowTimer != null )
                 {
                     autoShowTimer = null;
+
+                    if ( !IsRunning )
+                    {
+                        return;
+                    }
 
                     imageView.Post( () =>
                     {
