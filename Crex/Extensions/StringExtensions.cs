@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Security.Cryptography;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace Crex.Extensions
 {
@@ -19,6 +22,21 @@ namespace Crex.Extensions
             catch
             {
                 return default( T );
+            }
+        }
+
+        /// <summary>
+        /// Computes the hash of the given string.
+        /// </summary>
+        /// <param name="s">The string to hash.</param>
+        /// <returns></returns>
+        public static string ComputeHash( this string s )
+        {
+            using ( var hasher = new SHA1Managed() )
+            {
+                var hash = hasher.ComputeHash( Encoding.UTF8.GetBytes( s ?? string.Empty ) );
+
+                return Convert.ToBase64String( hash );
             }
         }
     }
