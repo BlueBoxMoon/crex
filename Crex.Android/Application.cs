@@ -26,7 +26,15 @@ namespace Crex.Android
         {
             Activity activity = ( Activity ) sender;
 
-            Intent intent = new Intent( activity, typeof( Activities.MenuActivity ) );
+            var type = Type.GetType( $"Crex.Android.Activities.{ Config.ApplicationRootTemplate }Activity" );
+
+            if ( type == null )
+            {
+                Log.Debug( "Crex", $"Unknown root template specified: { Config.ApplicationRootTemplate }" );
+                return;
+            }
+
+            Intent intent = new Intent( activity, type );
             intent.AddFlags( ActivityFlags.ClearTop );
             intent.PutExtra( "data", Config.ApplicationRootUrl.ToJson() );
             activity.Finish();

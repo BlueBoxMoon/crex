@@ -20,6 +20,15 @@ namespace Crex
         public int? AnimationTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the application root template.
+        /// </summary>
+        /// <value>
+        /// The application root template.
+        /// </value>
+        [DefaultValue( "Menu" )]
+        public string ApplicationRootTemplate { get; set; }
+
+        /// <summary>
         /// Gets or sets the application root URL.
         /// </summary>
         /// <value>
