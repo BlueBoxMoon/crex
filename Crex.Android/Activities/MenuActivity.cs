@@ -24,6 +24,12 @@ namespace Crex.Android.Activities
 
         #endregion
 
+        #region Fields
+
+        DateTime lastLoadedData = DateTime.MinValue;
+
+        #endregion
+
         #region Base Method Overrides
 
         /// <summary>
@@ -47,9 +53,23 @@ namespace Crex.Android.Activities
             ivBackground.Alpha = 0;
             mbMainMenu.Alpha = 0;
             mbMainMenu.ButtonClicked += menuBar_ButtonClicked;
-            lsLoading.Start();
 
-            LoadContentInBackground();
+            lsLoading.Start();
+        }
+
+        /// <summary>
+        /// Called after <c><see cref="M:Android.App.Activity.OnRestoreInstanceState(Android.OS.Bundle)" /></c>, <c><see cref="M:Android.App.Activity.OnRestart" /></c>, or
+        /// <c><see cref="M:Android.App.Activity.OnPause" /></c>, for your activity to start interacting with the user.
+        /// </summary>
+        protected override void OnResume()
+        {
+            base.OnResume();
+
+            if ( DateTime.Now.Subtract( lastLoadedData ).TotalSeconds > Crex.Application.Current.Config.ContentCacheTime.Value )
+            {
+                Log.Debug( "Crex", "Loading Content" );
+                LoadContentInBackground();
+            }
         }
 
         #endregion
@@ -69,8 +89,21 @@ namespace Crex.Android.Activities
                 //
                 string url = Intent.GetStringExtra( "data" ).FromJson<string>();
                 var json = await new System.Net.Http.HttpClient().GetStringAsync( url );
-                mainMenu = JsonConvert.DeserializeObject<Rest.MainMenu>( json.ToString() );
+                var menu = JsonConvert.DeserializeObject<Rest.MainMenu>( json.ToString() );
 
+                //
+                // If the menu content hasn't actually changed, then ignore.
+                //
+                if ( menu.ToJson().ComputeHash() == mainMenu.ToJson().ComputeHash() )
+                {
+                    return;
+                }
+
+                mainMenu = menu;
+
+                //
+                // Check if an update is required to show this menu.
+                //
                 if ( mainMenu.RequiredCrexVersion > Crex.Application.Current.CrexVersion )
                 {
                     ShowUpdateRequiredDialog();
@@ -105,6 +138,8 @@ namespace Crex.Android.Activities
                         .Alpha( 1 );
                     lsLoading.Stop();
                 } );
+
+                lastLoadedData = DateTime.Now;
             } )
             .ContinueWith( ( t ) =>
             {

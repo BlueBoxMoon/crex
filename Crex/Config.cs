@@ -28,6 +28,16 @@ namespace Crex
         public string ApplicationRootUrl { get; set; }
 
         /// <summary>
+        /// Gets or sets the content cache time in seconds. This is how long, for example,
+        /// the menu content is cached before attempting a reload.
+        /// </summary>
+        /// <value>
+        /// The content cache time in seconds.
+        /// </value>
+        [DefaultValue( 600 )]
+        public int? ContentCacheTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the image to use for the loading spinner.
         /// </summary>
         /// <value>
