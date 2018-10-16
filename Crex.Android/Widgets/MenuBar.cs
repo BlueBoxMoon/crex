@@ -66,6 +66,8 @@ namespace Crex.Android.Widgets
         /// <param name="buttonTitles">The button titles.</param>
         public void SetButtons( List<string> buttonTitles )
         {
+            RemoveAllViews();
+
             for ( int i = 0; i < buttonTitles.Count; i++ )
             {
                 var button = new Button( Context )
