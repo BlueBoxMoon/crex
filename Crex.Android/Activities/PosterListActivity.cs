@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Graphics;
@@ -32,6 +33,7 @@ namespace Crex.Android.Activities
         ArrayAdapter listAdapter;
         Bitmap[] listViewImages;
         const float BackgroundAlpha = 0.25f;
+        DateTime lastLoadedData = DateTime.MinValue;
 
         #endregion
 
@@ -65,6 +67,7 @@ namespace Crex.Android.Activities
             tvDetailLeft.Text = string.Empty;
             tvDetailRight.Text = string.Empty;
             tvDescription.Text = string.Empty;
+            ivBackground.Alpha = 0;
 
             //
             // Initialize the data and settings for the list view.
@@ -75,7 +78,20 @@ namespace Crex.Android.Activities
             lvPosterItems.ItemSelected += listView_ItemSelected;
 
             lsLoading.Start();
-            LoadContentInBackground();
+        }
+
+        /// <summary>
+        /// Called after <c><see cref="M:Android.App.Activity.OnRestoreInstanceState(Android.OS.Bundle)" /></c>, <c><see cref="M:Android.App.Activity.OnRestart" /></c>, or
+        /// <c><see cref="M:Android.App.Activity.OnPause" /></c>, for your activity to start interacting with the user.
+        /// </summary>
+        protected override void OnResume()
+        {
+            base.OnResume();
+
+            if ( DateTime.Now.Subtract( lastLoadedData ).TotalSeconds > Crex.Application.Current.Config.ContentCacheTime.Value )
+            {
+                LoadContentInBackground();
+            }
         }
 
         #endregion
@@ -96,11 +112,31 @@ namespace Crex.Android.Activities
                 var url = Intent.GetStringExtra( "data" ).FromJson<string>();
                 var client = new System.Net.Http.HttpClient();
                 var json = await client.GetStringAsync( url );
+                var data = Newtonsoft.Json.JsonConvert.DeserializeObject<Rest.PosterList>( json );
+
+                //
+                // If the content hasn't actually changed, then ignore.
+                //
+                if ( data.ToJson().ComputeHash() == posterListData.ToJson().ComputeHash() )
+                {
+                    return;
+                }
+
+                posterListData = data;
+
+                //
+                // Check if an update is required to show this menu.
+                //
+                if ( posterListData.RequiredCrexVersion > Crex.Application.Current.CrexVersion )
+                {
+                    ShowUpdateRequiredDialog();
+
+                    return;
+                }
 
                 //
                 // Load the background image in the background.
                 //
-                posterListData = Newtonsoft.Json.JsonConvert.DeserializeObject<Rest.PosterList>( json );
                 var imageTask = client.GetAsync( posterListData.BackgroundImage.BestMatch );
 
                 RunOnUiThread( () =>
@@ -112,6 +148,7 @@ namespace Crex.Android.Activities
                     //
                     // Initialize the adapter list.
                     //
+                    listAdapter.Clear();
                     foreach ( var item in posterListData.Items )
                     {
                         listAdapter.Add( item.Title );
@@ -136,7 +173,6 @@ namespace Crex.Android.Activities
 
                 RunOnUiThread( () =>
                 {
-                    ivBackground.Alpha = 0;
                     ivBackground.SetImageBitmap( image );
                     ivBackground.Animate().Alpha( BackgroundAlpha ).SetDuration( Crex.Application.Current.Config.AnimationTime.Value );
                 } );

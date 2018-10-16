@@ -20,7 +20,7 @@ namespace Crex.Android.Activities
         ImageView ivBackground;
         Widgets.MenuBar mbMainMenu;
         Widgets.LoadingSpinner lsLoading;
-        Rest.MainMenu mainMenu;
+        Rest.Menu mainMenu;
 
         #endregion
 
@@ -67,7 +67,6 @@ namespace Crex.Android.Activities
 
             if ( DateTime.Now.Subtract( lastLoadedData ).TotalSeconds > Crex.Application.Current.Config.ContentCacheTime.Value )
             {
-                Log.Debug( "Crex", "Loading Content" );
                 LoadContentInBackground();
             }
         }
@@ -89,7 +88,7 @@ namespace Crex.Android.Activities
                 //
                 string url = Intent.GetStringExtra( "data" ).FromJson<string>();
                 var json = await new System.Net.Http.HttpClient().GetStringAsync( url );
-                var menu = JsonConvert.DeserializeObject<Rest.MainMenu>( json.ToString() );
+                var menu = JsonConvert.DeserializeObject<Rest.Menu>( json.ToString() );
 
                 //
                 // If the menu content hasn't actually changed, then ignore.

@@ -2,7 +2,7 @@
 
 namespace Crex.Rest
 {
-    public class MainMenu
+    public class Menu
     {
         /// <summary>
         /// Gets or sets the background image.

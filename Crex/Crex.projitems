@@ -14,7 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ObjectExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\CrexAction.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Rest\MainMenu.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\Menu.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\MenuButton.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\PosterList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\PosterListItem.cs" />
