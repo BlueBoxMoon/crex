@@ -4,6 +4,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Foundation;
 using UIKit;
+using CoreImage;
+using CoreGraphics;
+using Accelerate;
 
 namespace Crex.tvOS
 {
@@ -65,5 +68,119 @@ namespace Crex.tvOS
             }
         }
 
+        /// <summary>
+        /// Creates a blurred image of an existing image at the given radius.
+        /// </summary>
+        /// <param name="originalImage">The original image.</param>
+        /// <param name="radius">The radius.</param>
+        /// <returns></returns>
+        public static UIImage CreateBlurredImage( UIImage originalImage, int radius )
+        {
+            UIImage newImage = null;
+
+            if (originalImage == null)
+            {
+                return null;
+            }
+
+            originalImage.InvokeOnMainThread( () => newImage = InternalCreateBlurredImage( originalImage, radius ) );
+
+            return newImage;
+        }
+
+        /// <summary>
+        /// Scales the image to th specified width, preserving aspect ratio.
+        /// </summary>
+        /// <returns>A new image at the requested width.</returns>
+        /// <param name="image">The image to resize.</param>
+        /// <param name="width">The target width.</param>
+        public static UIImage ScaleImageToWidth( UIImage image, int width )
+        {
+            UIImage scaledImage = null;
+
+            image.InvokeOnMainThread( () =>
+            {
+                var size = new CGSize( width, width / image.Size.Width * image.Size.Height );
+
+                UIGraphics.BeginImageContextWithOptions( size, false, UIScreen.MainScreen.Scale );
+                var context = UIGraphics.GetCurrentContext();
+                context.TranslateCTM( 0, size.Height );
+                context.ScaleCTM( 1.0f, -1.0f );
+
+                context.DrawImage( new CGRect( CGPoint.Empty, size ), image.CGImage );
+
+                scaledImage = UIGraphics.GetImageFromCurrentImageContext();
+                UIGraphics.EndImageContext();
+            } );
+
+            return scaledImage;
+        }
+
+        /// <summary>
+        /// Internal method to create a blurred image since this has to run on the main thread.
+        /// </summary>
+        /// <returns>The blurred image.</returns>
+        /// <param name="image">Image to be blurred.</param>
+        /// <param name="blurRadius">Blur radius.</param>
+        /// <remarks>
+        /// Originally from: https://github.com/xamarin/ios-samples/blob/master/UIImageEffects/UIImageEffects.cs
+        /// </remarks>
+        private static UIImage InternalCreateBlurredImage( UIImage image, float blurRadius )
+        {
+            var imageRect = new CGRect( CGPoint.Empty, image.Size );
+            var effectImage = image;
+
+            UIGraphics.BeginImageContextWithOptions( image.Size, false, UIScreen.MainScreen.Scale );
+            var contextIn = UIGraphics.GetCurrentContext();
+            contextIn.ScaleCTM( 1.0f, -1.0f );
+            contextIn.TranslateCTM( 0, -image.Size.Height );
+            contextIn.DrawImage( imageRect, image.CGImage );
+            var effectInContext = contextIn.AsBitmapContext() as CGBitmapContext;
+
+            var effectInBuffer = new vImageBuffer()
+            {
+                Data = effectInContext.Data,
+                Width = ( int ) effectInContext.Width,
+                Height = ( int ) effectInContext.Height,
+                BytesPerRow = ( int ) effectInContext.BytesPerRow
+            };
+
+            UIGraphics.BeginImageContextWithOptions( image.Size, false, UIScreen.MainScreen.Scale );
+            var effectOutContext = UIGraphics.GetCurrentContext().AsBitmapContext() as CGBitmapContext;
+            var effectOutBuffer = new vImageBuffer()
+            {
+                Data = effectOutContext.Data,
+                Width = ( int ) effectOutContext.Width,
+                Height = ( int ) effectOutContext.Height,
+                BytesPerRow = ( int ) effectOutContext.BytesPerRow
+            };
+
+            var inputRadius = blurRadius * UIScreen.MainScreen.Scale;
+            uint radius = ( uint ) ( Math.Floor( inputRadius * 3 * Math.Sqrt( 2 * Math.PI ) / 4 + 0.5 ) );
+            if ( ( radius % 2 ) != 1 )
+                radius += 1;
+            vImage.BoxConvolveARGB8888( ref effectInBuffer, ref effectOutBuffer, IntPtr.Zero, 0, 0, radius, radius, Pixel8888.Zero, vImageFlags.EdgeExtend );
+            vImage.BoxConvolveARGB8888( ref effectOutBuffer, ref effectInBuffer, IntPtr.Zero, 0, 0, radius, radius, Pixel8888.Zero, vImageFlags.EdgeExtend );
+            vImage.BoxConvolveARGB8888( ref effectInBuffer, ref effectOutBuffer, IntPtr.Zero, 0, 0, radius, radius, Pixel8888.Zero, vImageFlags.EdgeExtend );
+
+            effectImage = UIGraphics.GetImageFromCurrentImageContext();
+            UIGraphics.EndImageContext();
+            UIGraphics.EndImageContext();
+
+            // Setup up output context
+            UIGraphics.BeginImageContextWithOptions( image.Size, false, UIScreen.MainScreen.Scale );
+            var outputContext = UIGraphics.GetCurrentContext();
+            outputContext.ScaleCTM( 1, -1 );
+            outputContext.TranslateCTM( 0, -image.Size.Height );
+
+            // Draw base image
+            outputContext.SaveState();
+            outputContext.DrawImage( imageRect, effectImage.CGImage );
+            outputContext.RestoreState();
+            var outputImage = UIGraphics.GetImageFromCurrentImageContext();
+            UIGraphics.EndImageContext();
+
+            return outputImage;
+        }
     }
 }
