@@ -61,7 +61,6 @@ namespace Crex.tvOS.ViewControllers
         {
             Task.Run( async () =>
             {
-                await Task.Delay( 1000 );
                 //
                 // Load the image.
                 //

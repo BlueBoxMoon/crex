@@ -20,18 +20,21 @@ namespace Crex.tvOS
 
         protected void ShowUpdateRequiredDialog()
         {
-            var alertController = UIAlertController.Create( "Update Required",
+            InvokeOnMainThread( () =>
+            {
+                var alertController = UIAlertController.Create( "Update Required",
                                                   "An update is required to view this content.",
                                                   UIAlertControllerStyle.Alert );
 
-            var action = UIAlertAction.Create( "Close", UIAlertActionStyle.Cancel, ( alert ) =>
-            {
-                Console.WriteLine( "Close" );
-            } );
-            alertController.AddAction( action );
+                if ( NavigationController.ViewControllers[0] != this )
+                {
+                    var action = UIAlertAction.Create( "Close", UIAlertActionStyle.Cancel, ( alert ) =>
+                    {
+                        NavigationController.PopViewController( true );
+                    } );
+                    alertController.AddAction( action );
+                }
 
-            InvokeOnMainThread( () =>
-            {
                 PresentViewController( alertController, true, null );
             } );
         }
@@ -55,7 +58,6 @@ namespace Crex.tvOS
                 {
                     action = UIAlertAction.Create( "Cancel", UIAlertActionStyle.Cancel, ( alert ) =>
                     {
-                        Console.WriteLine( "Cancel" );
                         NavigationController.PopViewController( true );
                     } );
                     alertController.AddAction( action );
