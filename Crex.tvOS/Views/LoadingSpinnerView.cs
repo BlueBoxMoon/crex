@@ -81,6 +81,7 @@ namespace Crex.tvOS.Views
 
                 AutoShowTimer = new Timer( Crex.Application.Current.Config.LoadingSpinnerDelay.Value );
                 AutoShowTimer.Elapsed += AutoShowTimer_Elapsed;
+                AutoShowTimer.AutoReset = false;
                 AutoShowTimer.Enabled = true;
             }
         }
@@ -119,13 +120,16 @@ namespace Crex.tvOS.Views
                         ImageView.Alpha = 0.0f;
                     }, () =>
                     {
-                        lock ( this )
+                        InvokeOnMainThread( () =>
                         {
-                            if ( IsRunning )
+                            lock ( this )
                             {
-                                Stopped();
+                                if ( IsRunning )
+                                {
+                                    Stopped();
+                                }
                             }
-                        }
+                        } );
                     } );
                 }
             }
@@ -187,24 +191,24 @@ namespace Crex.tvOS.Views
         /// <param name="e">The ElapsedEventArgs instance containing the event data.</param>
         void AutoShowTimer_Elapsed( object sender, ElapsedEventArgs e )
         {
-            lock ( this )
+            InvokeOnMainThread( () =>
             {
-                if ( AutoShowTimer != null )
+                lock ( this )
                 {
-                    AutoShowTimer = null;
-
-                    if ( !IsRunning )
+                    if ( AutoShowTimer != null )
                     {
-                        return;
-                    }
+                        AutoShowTimer = null;
 
-                    InvokeOnMainThread( () =>
-                    {
+                        if ( !IsRunning )
+                        {
+                            return;
+                        }
+
                         StartSpinning();
                         ImageView.Hidden = false;
-                    } );
+                    }
                 }
-            }
+            } );
         }
 
         #endregion
