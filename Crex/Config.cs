@@ -16,7 +16,7 @@ namespace Crex
         /// <value>
         /// The animation time.
         /// </value>
-        [DefaultValue(250)]
+        [DefaultValue( 250 )]
         public int? AnimationTime { get; set; }
 
         /// <summary>
@@ -53,7 +53,10 @@ namespace Crex
         /// The image to use for the loading spinner.
         /// </value>
 #if __ANDROID__
-        [DefaultValue("resource:Crex.Android:Crex.Android.Resources.crex-default-spinner.png")]
+        [DefaultValue( "resource:Crex.Android:Crex.Android.Resources.crex-default-spinner.png" )]
+#endif
+#if __TVOS__
+        [DefaultValue( "resource:Crex.tvOS:Crex.tvOS.Resources.crex-default-spinner.png" )]
 #endif
         public string LoadingSpinner { get; set; }
 
@@ -65,7 +68,7 @@ namespace Crex
         /// <value>
         /// The time in milliseconds to delay before the spinner shows up.
         /// </value>
-        [DefaultValue(500)]
+        [DefaultValue( 500 )]
         public int? LoadingSpinnerDelay { get; set; }
 
         /// <summary>
