@@ -66,6 +66,9 @@
     <Compile Include="CrexBaseViewController.cs" />
     <Compile Include="ViewControllers\ImageViewController.cs" />
     <Compile Include="Views\LoadingSpinnerView.cs" />
+    <Compile Include="ViewControllers\PosterListViewController.cs" />
+    <Compile Include="Views\TopAlignedLabel.cs" />
+    <Compile Include="Views\PosterViewCell.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
