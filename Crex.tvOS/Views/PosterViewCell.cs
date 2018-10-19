@@ -15,6 +15,7 @@ namespace Crex.tvOS.Views
             : base( style, reuseIdentifier )
         {
             FocusStyle = UITableViewCellFocusStyle.Custom;
+            SelectionStyle = UITableViewCellSelectionStyle.None;
         }
 
         /// <summary>

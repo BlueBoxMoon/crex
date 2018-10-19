@@ -212,6 +212,7 @@ namespace Crex.tvOS.ViewControllers
         [Export( "tableView:didSelectRowAtIndexPath:" )]
         public void RowSelected( UITableView tableView, NSIndexPath indexPath )
         {
+            tableView.SelectRow( NSIndexPath.FromRowSection( 0, -1 ), false, UITableViewScrollPosition.None );
             Crex.Application.Current.StartAction( this, PosterData.Items[indexPath.Row].Action );
         }
 
