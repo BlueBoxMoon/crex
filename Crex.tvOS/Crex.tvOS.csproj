@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{2AB88772-2B98-43A9-A70A-EEDE47627E19}</ProjectGuid>
     <ProjectTypeGuids>{06FA79CB-D6CD-4721-BB4B-1BD202089C55};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -9,6 +9,14 @@
     <RootNamespace>Crex.tvOS</RootNamespace>
     <AssemblyName>Crex.tvOS</AssemblyName>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
+    <PackageId>Crex.tvOS</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Authors>Daniel Hazelbaker</Authors>
+    <Owners>Daniel Hazelbaker</Owners>
+    <Summary>Library for building Apple TV Applications for use with a Rock RMS feed.</Summary>
+    <PackageTags>rock rockrms</PackageTags>
+    <Description>Library for building Apple TV Applications for use with a Rock RMS feed.</Description>
+    <PackOnBuild>true</PackOnBuild>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -73,6 +81,9 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">
       <Version>11.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="NuGet.Build.Packaging">
+      <Version>0.2.0</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\Crex\Crex.projitems" Label="Shared" Condition="Exists('..\Crex\Crex.projitems')" />
