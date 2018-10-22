@@ -17,6 +17,14 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <AndroidUseLatestPlatformSdk>false</AndroidUseLatestPlatformSdk>
     <TargetFrameworkVersion>v8.1</TargetFrameworkVersion>
+    <PackOnBuild>true</PackOnBuild>
+    <PackageId>Crex.Android</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Authors>Daniel Hazelbaker</Authors>
+    <Owners>Daniel Hazelbaker</Owners>
+    <Summary>Library for building Android TV Applications for use with a Rock RMS feed.</Summary>
+    <PackageTags>rock rockrms</PackageTags>
+    <Description>Library for building Fire TV Applications for use with a Rock RMS feed.</Description>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -67,6 +75,9 @@
     </PackageReference>
     <PackageReference Include="Xamarin.Android.Support.v7.AppCompat">
       <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="NuGet.Build.Packaging">
+      <Version>0.2.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
