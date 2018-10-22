@@ -18,6 +18,11 @@ namespace Crex.tvOS
             };
         }
 
+        /// <summary>
+        /// Shows the update required dialog. This displays a message to the
+        /// user that an update is required to view the content. If the view
+        /// controller is not the root one then a Close button will be available.
+        /// </summary>
         protected void ShowUpdateRequiredDialog()
         {
             InvokeOnMainThread( () =>
@@ -39,11 +44,17 @@ namespace Crex.tvOS
             } );
         }
 
+        /// <summary>
+        /// Shows an error to the user indicating that we could not load the
+        /// data correctly. They can Retry or, if not the root view controller,
+        /// they can Cancel.
+        /// </summary>
+        /// <param name="retry">The action to be performed when Retry is pressed.</param>
         protected void ShowDataErrorDialog( Action retry )
         {
             InvokeOnMainThread( () =>
             {
-                var alertController = UIAlertController.Create( "Error loading data",
+                var alertController = UIAlertController.Create( "Error Loading Data",
                                                       "An error occurred trying to laod the content. Please try again later.",
                                                       UIAlertControllerStyle.Alert );
 

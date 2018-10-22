@@ -69,6 +69,7 @@
     <Compile Include="ViewControllers\PosterListViewController.cs" />
     <Compile Include="Views\TopAlignedLabel.cs" />
     <Compile Include="Views\PosterViewCell.cs" />
+    <Compile Include="ViewControllers\VideoViewController.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

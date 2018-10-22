@@ -26,5 +26,9 @@
 	<string>Assets.xcassets/App Icon &amp; Top Shelf Image.brandassets</string>
 	<key>XSLaunchImageAssets</key>
 	<string>Assets.xcassets/LaunchImages.launchimage</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 </dict>
 </plist>

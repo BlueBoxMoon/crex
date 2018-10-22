@@ -4,6 +4,7 @@ using Foundation;
 using UIKit;
 
 using Crex.Extensions;
+using AVFoundation;
 
 namespace Crex.tvOS
 {
@@ -15,6 +16,7 @@ namespace Crex.tvOS
         public Application()
             : base( System.IO.File.OpenRead( NSBundle.MainBundle.PathForResource( "config", "json" ) ), new Resolution( ( int ) UIScreen.MainScreen.NativeBounds.Size.Width, ( int ) UIScreen.MainScreen.NativeBounds.Size.Height ) )
         {
+            AVAudioSession.SharedInstance().SetCategory( AVAudioSession.CategoryPlayback );
         }
 
         /// <summary>
@@ -25,15 +27,7 @@ namespace Crex.tvOS
         {
             UIWindow window = ( UIWindow ) sender;
 
-            var type = Type.GetType( $"Crex.tvOS.ViewControllers.{ Current.Config.ApplicationRootTemplate }ViewController" );
-
-            if ( type == null )
-            {
-                Console.WriteLine( $"Unknown root template specified: { Current.Config.ApplicationRootTemplate }" );
-                return;
-            }
-
-            var rootViewController = ( CrexBaseViewController ) Activator.CreateInstance( type );
+            var rootViewController = GetViewControllerForTemplate( Current.Config.ApplicationRootTemplate );
             rootViewController.Data = Current.Config.ApplicationRootUrl.ToJson();
 
             window.RootViewController = new UINavigationController( rootViewController );
@@ -48,20 +42,31 @@ namespace Crex.tvOS
         public override void StartAction( object sender, Rest.CrexAction action )
         {
             UIViewController viewController = ( UIViewController ) sender;
-            var type = Type.GetType( $"Crex.tvOS.ViewControllers.{ action.Template }ViewController" );
-
-            if ( type == null )
-            {
-                Console.WriteLine( $"Unknown template specified: { action.Template }" );
-                return;
-            }
 
             Console.WriteLine( $"Navigation to { action.Template }" );
 
-            var newViewController = (CrexBaseViewController)Activator.CreateInstance( type );
+            var newViewController = GetViewControllerForTemplate( action.Template );
             newViewController.Data = action.Data.ToJson();
 
             viewController.NavigationController.PushViewController( newViewController, true );
+        }
+
+        /// <summary>
+        /// Gets the view controller for template.
+        /// </summary>
+        /// <returns>The view controller for template.</returns>
+        /// <param name="template">Template.</param>
+        private CrexBaseViewController GetViewControllerForTemplate(string template)
+        {
+            var type = Type.GetType( $"Crex.tvOS.ViewControllers.{ template }ViewController" );
+
+            if ( type == null )
+            {
+                Console.WriteLine( $"Unknown template specified: { template }" );
+                return null;
+            }
+
+            return ( CrexBaseViewController ) Activator.CreateInstance( type );
         }
     }
 }
