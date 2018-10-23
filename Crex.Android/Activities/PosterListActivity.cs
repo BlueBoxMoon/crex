@@ -180,6 +180,7 @@ namespace Crex.Android.Activities
             {
                 if ( t.IsFaulted )
                 {
+                    Console.WriteLine( $"Data Load Error: { t.Exception.InnerException.Message }\n{ t.Exception.InnerException.StackTrace }" );
                     ShowDataErrorDialog( LoadContentInBackground );
                 }
             } );
