@@ -1,8 +1,0 @@
-{
-  "ApplicationRootUrl": "https://rock.shepherdchurch.net/Webhooks/Lava.ashx/crex/sc/main.json",
-  "MenuBar": {
-    "BackgroundColor": "#b2121212",
-    "FocusedTextColor": "#ffffff",
-    "UnfocusedTextColor": "#808080"
-  }
-}
