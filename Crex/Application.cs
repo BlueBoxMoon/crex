@@ -15,7 +15,29 @@ namespace Crex
 {
     public abstract class Application
     {
-        public static Application Current { get; private set; }
+        /// <summary>
+        /// Gets the current Crex application object.
+        /// </summary>
+        /// <value>
+        /// The current Crex application object.
+        /// </value>
+        public static Application Current
+        {
+            get
+            {
+                if ( _Current == null )
+                {
+#if __ANDROID__
+                    _Current = new Crex.Android.Application();
+#elif __TVOS__
+                    _Current = new Crex.tvOS.Application();
+#endif
+                }
+
+                return _Current;
+            }
+        }
+        private static Application _Current;
 
         #region Properties
 
@@ -39,17 +61,15 @@ namespace Crex
         /// <param name="configStream">The stream that contains the configuration JSON data.</param>
         /// <param name="resolution">The resolution of the screen.</param>
         /// <exception cref="Exception">Application has already been initialized</exception>
-        public Application( Stream configStream, Resolution resolution )
+        protected Application( Stream configStream, Resolution resolution )
         {
-            if ( Current != null )
+            if ( _Current != null )
             {
                 throw new Exception( "Application has already been initialized" );
             }
 
             Config = Config.Initialize( configStream );
             Resolution = resolution;
-
-            Current = this;
         }
 
         /// <summary>
