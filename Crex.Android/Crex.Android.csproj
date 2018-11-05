@@ -19,7 +19,7 @@
     <TargetFrameworkVersion>v8.1</TargetFrameworkVersion>
     <PackOnBuild>true</PackOnBuild>
     <PackageId>Crex.Android</PackageId>
-    <PackageVersion>1.0.0</PackageVersion>
+    <PackageVersion>1.0</PackageVersion>
     <Authors>Daniel Hazelbaker</Authors>
     <Owners>Daniel Hazelbaker</Owners>
     <Summary>Library for building Android TV Applications for use with a Rock RMS feed.</Summary>
