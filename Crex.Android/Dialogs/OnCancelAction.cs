@@ -22,6 +22,14 @@ namespace Crex.Android.Dialogs
         /// <summary>
         /// Initializes a new instance of the <see cref="OnCancelAction"/> class.
         /// </summary>
+        public OnCancelAction()
+        {
+            Action = () => { };
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OnCancelAction"/> class.
+        /// </summary>
         /// <param name="action">The activity.</param>
         public OnCancelAction( Action action )
         {

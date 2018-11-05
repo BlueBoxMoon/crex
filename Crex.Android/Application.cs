@@ -59,11 +59,39 @@ namespace Crex.Android
 
             Log.Debug( "Crex", $"Navigation to { action.Template }" );
 
+            //
+            // Check if we can display this action.
+            //
+            if ( action.RequiredCrexVersion.HasValue && action.RequiredCrexVersion.Value > CrexVersion )
+            {
+                ShowUpdateRequiredDialog( currentActivity );
+
+                return;
+            }
+
             var intent = new Intent( currentActivity, type );
 
             intent.PutExtra( "data", action.Data.ToJson() );
 
             currentActivity.StartActivity( intent, ActivityOptions.MakeSceneTransitionAnimation( currentActivity ).ToBundle() );
+        }
+
+        /// <summary>
+        /// Shows the update required dialog, does not pop the current activity.
+        /// </summary>
+        protected void ShowUpdateRequiredDialog( Activity activity )
+        {
+            var builder = new AlertDialog.Builder( activity, global::Android.Resource.Style.ThemeDeviceDefaultDialogAlert );
+
+            builder.SetTitle( "Update Required" )
+                .SetMessage( "An update is required to view this content." )
+                .SetPositiveButton( "Close", new Dialogs.OnClickAction() )
+                .SetOnCancelListener( new Dialogs.OnCancelAction() );
+
+            activity.RunOnUiThread( () =>
+            {
+                builder.Show();
+            } );
         }
     }
 }

@@ -20,6 +20,14 @@ namespace Crex.Android.Dialogs
         public Action<int> Action { get; set; }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="OnClickAction"/> class.
+        /// </summary>
+        public OnClickAction()
+        {
+            Action = ( button ) => { };
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DialogOnClickAction"/> class.
         /// </summary>
         /// <param name="action">The action to be performed.</param>
@@ -34,7 +42,7 @@ namespace Crex.Android.Dialogs
         /// <param name="action">The action to be performed.</param>
         public OnClickAction( Action action )
         {
-            Action = (button) => { action(); };
+            Action = ( button ) => { action(); };
         }
 
         /// <summary>
