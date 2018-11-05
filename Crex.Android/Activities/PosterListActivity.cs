@@ -14,26 +14,73 @@ namespace Crex.Android.Activities
     [Activity( Label = "PosterList" )]
     public class PosterListActivity : CrexBaseActivity
     {
-        #region Widgets
+        #region Views
 
-        ImageView ivBackground;
-        TextView tvTitle;
-        ImageView ivPosterImage;
-        TextView tvDetailLeft;
-        TextView tvDetailRight;
-        TextView tvDescription;
-        Widgets.LoadingSpinner lsLoading;
+        protected ImageView BackgroundImageView { get; private set; }
+
+        protected TextView TitleView { get; private set; }
+
+        protected ImageView PosterImageView { get; private set; }
+
+        protected TextView DetailLeftView { get; private set; }
+
+        protected TextView DetailRightView { get; private set; }
+
+        protected TextView DescriptionView { get; private set; }
+
+        protected Widgets.LoadingSpinner LoadingSpinnerView { get; private set; }
 
         #endregion
 
-        #region Fields
+        #region Properties
 
-        Rest.PosterList posterListData;
-        ListView lvPosterItems;
-        ArrayAdapter listAdapter;
-        Bitmap[] listViewImages;
-        const float BackgroundAlpha = 0.25f;
-        DateTime lastLoadedData = DateTime.MinValue;
+        /// <summary>
+        /// Gets the poster data.
+        /// </summary>
+        /// <value>
+        /// The poster data.
+        /// </value>
+        protected Rest.PosterList PosterData { get; private set; }
+
+        /// <summary>
+        /// Gets the date we last loaded our content.
+        /// </summary>
+        /// <value>
+        /// The date we last loaded our content.
+        /// </value>
+        protected DateTime LastLoadedDate { get; private set; } = DateTime.MinValue;
+
+        /// <summary>
+        /// Gets the poster items.
+        /// </summary>
+        /// <value>
+        /// The poster items.
+        /// </value>
+        protected ListView PosterItems { get; private set; }
+
+        /// <summary>
+        /// Gets the poster items adapter.
+        /// </summary>
+        /// <value>
+        /// The poster items adapter.
+        /// </value>
+        protected ArrayAdapter PosterItemsAdapter { get; private set; }
+
+        /// <summary>
+        /// Gets the poster images.
+        /// </summary>
+        /// <value>
+        /// The poster images.
+        /// </value>
+        protected Bitmap[] PosterImages { get; private set; }
+
+        /// <summary>
+        /// Gets the target alpha for the background image.
+        /// </summary>
+        /// <value>
+        /// The target alpha for the background image.
+        /// </value>
+        protected float BackgroundAlpha => 0.25f;
 
         #endregion
 
@@ -51,33 +98,33 @@ namespace Crex.Android.Activities
             //
             // Get all our child views.
             //
-            ivBackground = FindViewById<ImageView>( Resource.Id.ivBackground );
-            tvTitle = FindViewById<TextView>( Resource.Id.tvTitle );
-            ivPosterImage = FindViewById<ImageView>( Resource.Id.ivPosterImage );
-            tvDetailLeft = FindViewById<TextView>( Resource.Id.tvDetailLeft );
-            tvDetailRight = FindViewById<TextView>( Resource.Id.tvDetailRight );
-            tvDescription = FindViewById<TextView>( Resource.Id.tvDescription );
-            lvPosterItems = FindViewById<ListView>( Resource.Id.lvPosterItems );
-            lsLoading = FindViewById<Widgets.LoadingSpinner>( Resource.Id.lsLoading );
+            BackgroundImageView = FindViewById<ImageView>( Resource.Id.ivBackground );
+            TitleView = FindViewById<TextView>( Resource.Id.tvTitle );
+            PosterImageView = FindViewById<ImageView>( Resource.Id.ivPosterImage );
+            DetailLeftView = FindViewById<TextView>( Resource.Id.tvDetailLeft );
+            DetailRightView = FindViewById<TextView>( Resource.Id.tvDetailRight );
+            DescriptionView = FindViewById<TextView>( Resource.Id.tvDescription );
+            PosterItems = FindViewById<ListView>( Resource.Id.lvPosterItems );
+            LoadingSpinnerView = FindViewById<Widgets.LoadingSpinner>( Resource.Id.lsLoading );
 
             //
             // Set initial states and indicate that we are loading to the user.
             //
-            tvTitle.Text = string.Empty;
-            tvDetailLeft.Text = string.Empty;
-            tvDetailRight.Text = string.Empty;
-            tvDescription.Text = string.Empty;
-            ivBackground.Alpha = 0;
+            TitleView.Text = string.Empty;
+            DetailLeftView.Text = string.Empty;
+            DetailRightView.Text = string.Empty;
+            DescriptionView.Text = string.Empty;
+            BackgroundImageView.Alpha = 0;
 
             //
             // Initialize the data and settings for the list view.
             //
-            listAdapter = new ArrayAdapter<string>( this, Resource.Layout.PosterListViewItem );
-            lvPosterItems.Adapter = listAdapter;
-            lvPosterItems.ItemClick += listView_ItemClick;
-            lvPosterItems.ItemSelected += listView_ItemSelected;
+            PosterItemsAdapter = new ArrayAdapter<string>( this, Resource.Layout.PosterListViewItem );
+            PosterItems.Adapter = PosterItemsAdapter;
+            PosterItems.ItemClick += listView_ItemClick;
+            PosterItems.ItemSelected += listView_ItemSelected;
 
-            lsLoading.Start();
+            LoadingSpinnerView.Start();
         }
 
         /// <summary>
@@ -88,7 +135,7 @@ namespace Crex.Android.Activities
         {
             base.OnResume();
 
-            if ( DateTime.Now.Subtract( lastLoadedData ).TotalSeconds > Crex.Application.Current.Config.ContentCacheTime.Value )
+            if ( DateTime.Now.Subtract( LastLoadedDate ).TotalSeconds > Crex.Application.Current.Config.ContentCacheTime.Value )
             {
                 LoadContentInBackground();
             }
@@ -117,17 +164,17 @@ namespace Crex.Android.Activities
                 //
                 // If the content hasn't actually changed, then ignore.
                 //
-                if ( data.ToJson().ComputeHash() == posterListData.ToJson().ComputeHash() )
+                if ( data.ToJson().ComputeHash() == PosterData.ToJson().ComputeHash() )
                 {
                     return;
                 }
 
-                posterListData = data;
+                PosterData = data;
 
                 //
                 // Check if an update is required to show this menu.
                 //
-                if ( posterListData.RequiredCrexVersion > Crex.Application.Current.CrexVersion )
+                if ( PosterData.RequiredCrexVersion > Crex.Application.Current.CrexVersion )
                 {
                     ShowUpdateRequiredDialog();
 
@@ -137,31 +184,34 @@ namespace Crex.Android.Activities
                 //
                 // Load the background image in the background.
                 //
-                var imageTask = client.GetAsync( posterListData.BackgroundImage.BestMatch );
+                var imageTask = client.GetAsync( PosterData.BackgroundImage.BestMatch );
 
+                //
+                // Set the UI elements related to the initial selections.
+                //
                 RunOnUiThread( () =>
                 {
-                    listViewImages = new Bitmap[posterListData.Items.Count];
+                    PosterImages = new Bitmap[PosterData.Items.Count];
 
-                    tvTitle.Text = posterListData.Title;
+                    TitleView.Text = PosterData.Title;
 
                     //
                     // Initialize the adapter list.
                     //
-                    listAdapter.Clear();
-                    foreach ( var item in posterListData.Items )
+                    PosterItemsAdapter.Clear();
+                    foreach ( var item in PosterData.Items )
                     {
-                        listAdapter.Add( item.Title );
+                        PosterItemsAdapter.Add( item.Title );
                     }
 
                     //
                     // Notify the list view that the content has changed and give it
                     // input focus.
                     //
-                    listAdapter.NotifyDataSetChanged();
-                    lvPosterItems.RequestFocus();
+                    PosterItemsAdapter.NotifyDataSetChanged();
+                    PosterItems.RequestFocus();
 
-                    lsLoading.Stop();
+                    LoadingSpinnerView.Stop();
                 } );
 
                 //
@@ -169,13 +219,16 @@ namespace Crex.Android.Activities
                 //
                 var imageStream = await ( await imageTask ).Content.ReadAsStreamAsync();
                 var image = BitmapFactory.DecodeStream( imageStream );
-                image = Utility.CreateBlurredImage( image, 16 );
+                image = Utility.ScaleImageToWidth( image, ( int ) ( BackgroundImageView.Width / 2.0f ) );
+                image = Utility.CreateBlurredImage( image, 4 );
 
                 RunOnUiThread( () =>
                 {
-                    ivBackground.SetImageBitmap( image );
-                    ivBackground.Animate().Alpha( BackgroundAlpha ).SetDuration( Crex.Application.Current.Config.AnimationTime.Value );
+                    BackgroundImageView.SetImageBitmap( image );
+                    BackgroundImageView.Animate().Alpha( BackgroundAlpha ).SetDuration( Crex.Application.Current.Config.AnimationTime.Value );
                 } );
+
+                LastLoadedDate = DateTime.Now;
             } ).ContinueWith( ( t ) =>
             {
                 if ( t.IsFaulted )
@@ -197,7 +250,7 @@ namespace Crex.Android.Activities
         /// <param name="e">The <see cref="AdapterView.ItemClickEventArgs"/> instance containing the event data.</param>
         private void listView_ItemClick( object sender, AdapterView.ItemClickEventArgs e )
         {
-            var item = posterListData.Items[e.Position];
+            var item = PosterData.Items[e.Position];
 
             Crex.Application.Current.StartAction( this, item.Action );
         }
@@ -209,12 +262,12 @@ namespace Crex.Android.Activities
         /// <param name="e">The <see cref="AdapterView.ItemSelectedEventArgs"/> instance containing the event data.</param>
         private void listView_ItemSelected( object sender, AdapterView.ItemSelectedEventArgs e )
         {
-            if ( listViewImages == null || listViewImages[e.Position] == null )
+            if ( PosterImages == null || PosterImages[e.Position] == null )
             {
                 //
                 // Create and set a temporary 1 pixel by 1 pixel transparent bitmap image.
                 //
-                ivPosterImage.Visibility = ViewStates.Invisible;
+                PosterImageView.Visibility = ViewStates.Invisible;
                 //listViewImages[e.Position] = Bitmap.CreateBitmap( 1, 1, Bitmap.Config.Argb8888 );
                 //ivPosterImage.SetImageBitmap( listViewImages[e.Position] );
 
@@ -227,52 +280,52 @@ namespace Crex.Android.Activities
                     // Load the image.
                     //
                     var client = new System.Net.Http.HttpClient();
-                    var imageTask = client.GetAsync( posterListData.Items[e.Position].Image.BestMatch );
+                    var imageTask = client.GetAsync( PosterData.Items[e.Position].Image.BestMatch );
                     var imageStream = await ( await imageTask ).Content.ReadAsStreamAsync();
                     var image = BitmapFactory.DecodeStream( imageStream );
 
                     //
                     // Store the image in our cache.
                     //
-                    listViewImages[e.Position] = image;
+                    PosterImages[e.Position] = image;
 
                     //
                     // Update the UI.
                     //
                     RunOnUiThread( () =>
                     {
-                        if ( lvPosterItems.SelectedItemPosition == e.Position )
+                        if ( PosterItems.SelectedItemPosition == e.Position )
                         {
-                            if (ivPosterImage.Visibility == ViewStates.Invisible)
+                            if (PosterImageView.Visibility == ViewStates.Invisible)
                             {
-                                ivPosterImage.Alpha = 0;
-                                ivPosterImage.Visibility = ViewStates.Visible;
-                                ivPosterImage.Animate().Alpha( 1 ).SetDuration( Crex.Application.Current.Config.AnimationTime.Value );
+                                PosterImageView.Alpha = 0;
+                                PosterImageView.Visibility = ViewStates.Visible;
+                                PosterImageView.Animate().Alpha( 1 ).SetDuration( Crex.Application.Current.Config.AnimationTime.Value );
                             }
 
-                            ivPosterImage.SetImageBitmap( image );
+                            PosterImageView.SetImageBitmap( image );
                         }
                     } );
                 } );
             }
             else
             {
-                if ( ivPosterImage.Visibility == ViewStates.Invisible )
+                if ( PosterImageView.Visibility == ViewStates.Invisible )
                 {
-                    ivPosterImage.Alpha = 0;
-                    ivPosterImage.Visibility = ViewStates.Visible;
-                    ivPosterImage.Animate().Alpha( 1 ).SetDuration( Crex.Application.Current.Config.AnimationTime.Value );
+                    PosterImageView.Alpha = 0;
+                    PosterImageView.Visibility = ViewStates.Visible;
+                    PosterImageView.Animate().Alpha( 1 ).SetDuration( Crex.Application.Current.Config.AnimationTime.Value );
                 }
 
-                ivPosterImage.SetImageBitmap( listViewImages[e.Position] );
+                PosterImageView.SetImageBitmap( PosterImages[e.Position] );
             }
 
             //
             // Update the text content about the item.
             //
-            tvDetailLeft.Text = posterListData.Items[e.Position].DetailLeft;
-            tvDetailRight.Text = posterListData.Items[e.Position].DetailRight;
-            tvDescription.Text = posterListData.Items[e.Position].Description;
+            DetailLeftView.Text = PosterData.Items[e.Position].DetailLeft;
+            DetailRightView.Text = PosterData.Items[e.Position].DetailRight;
+            DescriptionView.Text = PosterData.Items[e.Position].Description;
         }
 
         #endregion

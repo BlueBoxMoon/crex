@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.OS;
-using Android.Util;
 using Android.Widget;
 using Newtonsoft.Json;
 
@@ -15,18 +14,33 @@ namespace Crex.Android.Activities
     [Activity( Label = "Menu" )]
     public class MenuActivity : CrexBaseActivity
     {
-        #region View Fields
+        #region Views
 
-        ImageView ivBackground;
-        Widgets.MenuBar mbMainMenu;
-        Widgets.LoadingSpinner lsLoading;
-        Rest.Menu mainMenu;
+        protected ImageView BackgroundImageView { get; private set; }
+
+        protected Widgets.MenuBar MenuBarView { get; private set; }
+
+        protected Widgets.LoadingSpinner LoadingSpinnerView { get; private set; }
 
         #endregion
 
-        #region Fields
+        #region Properties
 
-        DateTime lastLoadedData = DateTime.MinValue;
+        /// <summary>
+        /// Gets the menu data.
+        /// </summary>
+        /// <value>
+        /// The menu data.
+        /// </value>
+        protected Rest.Menu MenuData { get; private set; }
+
+        /// <summary>
+        /// Gets the date we last loaded our content.
+        /// </summary>
+        /// <value>
+        /// The date we last loaded our content.
+        /// </value>
+        protected DateTime LastLoadedDate { get; private set; } = DateTime.MinValue;
 
         #endregion
 
@@ -43,18 +57,18 @@ namespace Crex.Android.Activities
             //
             // Get the controls in the view.
             //
-            ivBackground = FindViewById<ImageView>( Resource.Id.ivBackground );
-            mbMainMenu = FindViewById<Widgets.MenuBar>( Resource.Id.mbMainMenu );
-            lsLoading = FindViewById<Widgets.LoadingSpinner>( Resource.Id.lsLoading );
+            BackgroundImageView = FindViewById<ImageView>( Resource.Id.ivBackground );
+            MenuBarView = FindViewById<Widgets.MenuBar>( Resource.Id.mbMainMenu );
+            LoadingSpinnerView = FindViewById<Widgets.LoadingSpinner>( Resource.Id.lsLoading );
 
             //
             // Set initial states and indicate that we are loading to the user.
             //
-            ivBackground.Alpha = 0;
-            mbMainMenu.Alpha = 0;
-            mbMainMenu.ButtonClicked += menuBar_ButtonClicked;
+            BackgroundImageView.Alpha = 0;
+            MenuBarView.Alpha = 0;
+            MenuBarView.ButtonClicked += menuBar_ButtonClicked;
 
-            lsLoading.Start();
+            LoadingSpinnerView.Start();
         }
 
         /// <summary>
@@ -65,7 +79,7 @@ namespace Crex.Android.Activities
         {
             base.OnResume();
 
-            if ( DateTime.Now.Subtract( lastLoadedData ).TotalSeconds > Crex.Application.Current.Config.ContentCacheTime.Value )
+            if ( DateTime.Now.Subtract( LastLoadedDate ).TotalSeconds > Crex.Application.Current.Config.ContentCacheTime.Value )
             {
                 LoadContentInBackground();
             }
@@ -93,17 +107,17 @@ namespace Crex.Android.Activities
                 //
                 // If the menu content hasn't actually changed, then ignore.
                 //
-                if ( menu.ToJson().ComputeHash() == mainMenu.ToJson().ComputeHash() )
+                if ( menu.ToJson().ComputeHash() == MenuData.ToJson().ComputeHash() )
                 {
                     return;
                 }
 
-                mainMenu = menu;
+                MenuData = menu;
 
                 //
                 // Check if an update is required to show this menu.
                 //
-                if ( mainMenu.RequiredCrexVersion > Crex.Application.Current.CrexVersion )
+                if ( MenuData.RequiredCrexVersion > Crex.Application.Current.CrexVersion )
                 {
                     ShowUpdateRequiredDialog();
 
@@ -113,8 +127,8 @@ namespace Crex.Android.Activities
                 //
                 // Load the background image and prepate the menu buttons.
                 //
-                var imageTask = Utility.LoadImageFromUrlAsync( mainMenu.BackgroundImage.BestMatch );
-                var buttons = mainMenu.Buttons.Select( b => b.Title ).ToList();
+                var imageTask = Utility.LoadImageFromUrlAsync( MenuData.BackgroundImage.BestMatch );
+                var buttons = MenuData.Buttons.Select( b => b.Title ).ToList();
                 var image = await imageTask;
 
                 RunOnUiThread( () =>
@@ -122,23 +136,23 @@ namespace Crex.Android.Activities
                     //
                     // Update the UI with the image and buttons.
                     //
-                    ivBackground.SetImageBitmap( image );
-                    mbMainMenu.SetButtons( buttons );
-                    mbMainMenu.RequestFocus();
+                    BackgroundImageView.SetImageBitmap( image );
+                    MenuBarView.SetButtons( buttons );
+                    MenuBarView.RequestFocus();
 
                     //
                     // Animate the transition from black to our UI.
                     //
-                    mbMainMenu.Animate()
+                    MenuBarView.Animate()
                         .SetDuration( Crex.Application.Current.Config.AnimationTime.Value )
                         .Alpha( 1 );
-                    ivBackground.Animate()
+                    BackgroundImageView.Animate()
                         .SetDuration( Crex.Application.Current.Config.AnimationTime.Value )
                         .Alpha( 1 );
-                    lsLoading.Stop();
+                    LoadingSpinnerView.Stop();
                 } );
 
-                lastLoadedData = DateTime.Now;
+                LastLoadedDate = DateTime.Now;
             } )
             .ContinueWith( ( t ) =>
             {
@@ -160,7 +174,7 @@ namespace Crex.Android.Activities
         /// <param name="e">The <see cref="Widgets.ButtonClickEventArgs"/> instance containing the event data.</param>
         private void menuBar_ButtonClicked( object sender, Widgets.ButtonClickEventArgs e )
         {
-            var button = mainMenu.Buttons[e.Position];
+            var button = MenuData.Buttons[e.Position];
 
             Crex.Application.Current.StartAction( this, button.Action );
         }

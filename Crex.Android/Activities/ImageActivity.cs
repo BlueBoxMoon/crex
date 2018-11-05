@@ -13,10 +13,11 @@ namespace Crex.Android.Activities
     [Activity( Label = "Image" )]
     public class ImageActivity : CrexBaseActivity
     {
-        #region Widgets
+        #region Views
 
-        ImageView ivBackground;
-        Widgets.LoadingSpinner lsLoading;
+        protected ImageView BackgroundImageView { get; private set; }
+
+        protected Widgets.LoadingSpinner LoadingSpinnerView { get; private set; }
 
         #endregion
 
@@ -31,10 +32,10 @@ namespace Crex.Android.Activities
 
             SetContentView( Resource.Layout.ImageView );
 
-            ivBackground = FindViewById<ImageView>( Resource.Id.ivBackground );
-            lsLoading = FindViewById<Widgets.LoadingSpinner>( Resource.Id.lsLoading );
+            BackgroundImageView = FindViewById<ImageView>( Resource.Id.ivBackground );
+            LoadingSpinnerView = FindViewById<Widgets.LoadingSpinner>( Resource.Id.lsLoading );
 
-            lsLoading.Start();
+            LoadingSpinnerView.Start();
 
             LoadContentInBackground();
         }
@@ -64,9 +65,9 @@ namespace Crex.Android.Activities
 
                 RunOnUiThread( () =>
                 {
-                    ivBackground.SetImageBitmap( image );
+                    BackgroundImageView.SetImageBitmap( image );
 
-                    lsLoading.Stop();
+                    LoadingSpinnerView.Stop();
                 } );
             } ).ContinueWith( ( t ) =>
             {

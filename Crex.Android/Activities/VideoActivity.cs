@@ -13,10 +13,11 @@ namespace Crex.Android.Activities
     [Activity( Label = "Video" )]
     public class VideoActivity : Activity
     {
-        #region Widgets
+        #region Views
 
-        VideoView vvVideo;
-        Widgets.LoadingSpinner lsLoading;
+        protected VideoView VideoView { get; private set; }
+
+        protected Widgets.LoadingSpinner LoadingSpinnerView { get; private set; }
 
         #endregion
 
@@ -59,16 +60,16 @@ namespace Crex.Android.Activities
 
             SetContentView( Resource.Layout.VideoView );
 
-            vvVideo = FindViewById<VideoView>( Resource.Id.vvVideo );
-            lsLoading = FindViewById<Widgets.LoadingSpinner>( Resource.Id.lsLoading );
+            VideoView = FindViewById<VideoView>( Resource.Id.vvVideo );
+            LoadingSpinnerView = FindViewById<Widgets.LoadingSpinner>( Resource.Id.lsLoading );
 
-            vvVideo.Completion += video_Completion;
-            vvVideo.Error += video_Error;
-            vvVideo.Prepared += video_Prepared;
+            VideoView.Completion += video_Completion;
+            VideoView.Error += video_Error;
+            VideoView.Prepared += video_Prepared;
 
             var mediaController = new MediaController( this );
-            mediaController.SetAnchorView( vvVideo );
-            vvVideo.SetMediaController( mediaController );
+            mediaController.SetAnchorView( VideoView );
+            VideoView.SetMediaController( mediaController );
         }
 
         /// <summary>
@@ -99,13 +100,13 @@ namespace Crex.Android.Activities
         {
             base.OnPause();
 
-            vvVideo.Pause();
+            VideoView.Pause();
 
             try
             {
                 LastUrl = Intent.GetStringExtra( "data" ).FromJson<string>();
-                LastPosition = vvVideo.CurrentPosition;
-                var duration = vvVideo.Duration;
+                LastPosition = VideoView.CurrentPosition;
+                var duration = VideoView.Duration;
 
                 //
                 // Times our in milliseconds.
@@ -173,11 +174,11 @@ namespace Crex.Android.Activities
         /// <param name="position">The position.</param>
         private void PlayVideo( string url, int position )
         {
-            lsLoading.Start();
+            LoadingSpinnerView.Start();
 
             PlaybackAtPosition = position;
-            vvVideo.SetVideoURI( global::Android.Net.Uri.Parse( url ) );
-            vvVideo.RequestFocus();
+            VideoView.SetVideoURI( global::Android.Net.Uri.Parse( url ) );
+            VideoView.RequestFocus();
         }
 
         #endregion
@@ -221,18 +222,18 @@ namespace Crex.Android.Activities
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void video_Prepared( object sender, EventArgs e )
         {
-            lsLoading.Stop( () =>
+            LoadingSpinnerView.Stop( () =>
             {
-                lsLoading.Visibility = ViewStates.Invisible;
-                vvVideo.LayoutParameters.Width = ViewGroup.LayoutParams.MatchParent;
-                vvVideo.LayoutParameters.Height = ViewGroup.LayoutParams.MatchParent;
+                LoadingSpinnerView.Visibility = ViewStates.Invisible;
+                VideoView.LayoutParameters.Width = ViewGroup.LayoutParams.MatchParent;
+                VideoView.LayoutParameters.Height = ViewGroup.LayoutParams.MatchParent;
 
                 if ( PlaybackAtPosition.HasValue )
                 {
-                    vvVideo.SeekTo( PlaybackAtPosition.Value );
+                    VideoView.SeekTo( PlaybackAtPosition.Value );
                 }
 
-                vvVideo.Start();
+                VideoView.Start();
             } );
         }
 

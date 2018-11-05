@@ -107,5 +107,18 @@ namespace Crex.Android
 
             return blurredBitmap;
         }
+
+        /// <summary>
+        /// Scales the image to the specified width, preserving aspect ratio.
+        /// </summary>
+        /// <param name="originalBitmap">The original bitmap.</param>
+        /// <param name="width">The new width.</param>
+        /// <returns>An image of the given width in pixels.</returns>
+        public static Bitmap ScaleImageToWidth( Bitmap originalBitmap, int width )
+        {
+            float ratio = originalBitmap.Width / width;
+
+            return Bitmap.CreateScaledBitmap( originalBitmap, width, ( int ) ( originalBitmap.Height / ratio ), true );
+        }
     }
 }

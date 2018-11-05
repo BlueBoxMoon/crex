@@ -24,6 +24,9 @@ namespace Crex.Android.Widgets
         /// </summary>
         Timer autoShowTimer;
 
+        /// <summary>
+        /// The stop actions to be performed.
+        /// </summary>
         readonly List<Action> _stopActions = new List<Action>();
 
         #endregion

@@ -127,8 +127,18 @@ namespace Crex.Android.Widgets
     /// <seealso cref="System.EventArgs" />
     public class ButtonClickEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets the button position.
+        /// </summary>
+        /// <value>
+        /// The button position.
+        /// </value>
         public int Position { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ButtonClickEventArgs"/> class.
+        /// </summary>
+        /// <param name="buttonIndex">Index of the button.</param>
         public ButtonClickEventArgs( int buttonIndex )
         {
             Position = buttonIndex;
