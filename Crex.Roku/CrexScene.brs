@@ -154,9 +154,13 @@ sub ShowItem(item as Object)
   rem --
   rem -- Each item should have a Template and Url property.
   rem --
-  LogMessage(FormatJson(item))
   if item.Template <> invalid and item.Data <> invalid
-    LogMessage("Navigation to " + item.Template)
+    LogMessage("Navigation to " + FormatJson(item))
+
+    if item.RequiredCrexVersion <> invalid and item.RequiredCrexVersion > GetCrexVersion()
+      ShowUpdateRequiredDialog(false)
+      return
+    end if
 
     view = CreateObject("roSGNode", item.Template + "View")
     view.crexScene = m.top

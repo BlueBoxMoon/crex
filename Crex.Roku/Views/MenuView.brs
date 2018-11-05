@@ -102,6 +102,11 @@ sub onContentChanged()
   end if
 
   if m.config <> invalid
+    if m.config.RequiredCrexVersion <> invalid and m.config.RequiredCrexVersion > GetCrexVersion()
+      ShowUpdateRequiredDialog()
+      return
+    end if
+    
     rem --
     rem -- Configure UI elements with the configuration options.
     rem --

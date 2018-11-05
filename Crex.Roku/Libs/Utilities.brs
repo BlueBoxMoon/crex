@@ -207,6 +207,42 @@ function BestMatchingUrl(urlset as object) as string
 end function
 
 
+rem --
+rem -- ShowUpdateRequiredDialog(popOnClose)
+rem --
+rem -- Show a dialog that tells the user an update is required.
+rem --
+sub ShowUpdateRequiredDialog(popOnClose = true)
+  dialog = createObject("roSGNode", "Dialog")
+  dialog.title = "Update Required"
+  dialog.message = "An update is required to view this content."
+  if popOnClose = true
+    dialog.observeField("wasClosed", "onUpdateRequiredDialogClosed")
+  end if
+
+  if m.top.crexScene <> invalid
+    m.top.crexScene.dialog = dialog
+  else
+    m.top.dialog = dialog
+  end if
+end sub
+
+
+rem --
+rem -- onUpdateRequiredDialogClosed()
+rem --
+rem -- If the pop on close option was specified for the update required
+rem -- dialog then pop the active view.
+rem --
+sub onUpdateRequiredDialogClosed()
+  if m.top.crexScene <> invalid
+    m.top.crexScene.callFunc("PopActiveView")
+  else
+    m.top.callFunc("PopActiveView")
+  end if
+end sub
+
+
 rem *******************************************************
 rem * Registry Functions
 rem *******************************************************
