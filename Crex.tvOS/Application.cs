@@ -45,6 +45,16 @@ namespace Crex.tvOS
 
             Console.WriteLine( $"Navigation to { action.Template }" );
 
+            //
+            // Check if we can display this action.
+            //
+            if ( action.RequiredCrexVersion.HasValue && action.RequiredCrexVersion.Value > CrexVersion )
+            {
+                ShowUpdateRequiredDialog( viewController );
+
+                return;
+            }
+
             var newViewController = GetViewControllerForTemplate( action.Template );
             newViewController.Data = action.Data.ToJson();
 
@@ -67,6 +77,25 @@ namespace Crex.tvOS
             }
 
             return ( CrexBaseViewController ) Activator.CreateInstance( type );
+        }
+
+        /// <summary>
+        /// Shows the update required dialog. This displays a message to the
+        /// user that an update is required to view the content.
+        /// </summary>
+        protected void ShowUpdateRequiredDialog( UIViewController viewController )
+        {
+            viewController.InvokeOnMainThread( () =>
+            {
+                var alertController = UIAlertController.Create( "Update Required",
+                                                  "An update is required to view this content.",
+                                                  UIAlertControllerStyle.Alert );
+
+                var action = UIAlertAction.Create( "Close", UIAlertActionStyle.Cancel, ( alert ) => { } );
+                alertController.AddAction( action );
+
+                viewController.PresentViewController( alertController, true, null );
+            } );
         }
     }
 }

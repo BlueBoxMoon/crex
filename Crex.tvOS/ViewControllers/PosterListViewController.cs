@@ -35,6 +35,8 @@ namespace Crex.tvOS.ViewControllers
 
         protected Rest.PosterList PosterData { get; private set; }
 
+        protected DateTime LastLoadedDate { get; private set; } = DateTime.MinValue;
+
         protected UIImage[] ListViewImages { get; private set; }
 
         protected const float BackgroundAlpha = 0.25f;
@@ -117,7 +119,10 @@ namespace Crex.tvOS.ViewControllers
         {
             base.ViewWillAppear( animated );
 
-            LoadContentInBackground();
+            if ( DateTime.Now.Subtract( LastLoadedDate ).TotalSeconds > Crex.Application.Current.Config.ContentCacheTime.Value )
+            {
+                LoadContentInBackground();
+            }
         }
 
         #endregion
@@ -189,6 +194,8 @@ namespace Crex.tvOS.ViewControllers
 
                     LoadingSpinnerView.Stop();
                 } );
+
+                LastLoadedDate = DateTime.Now;
             } )
             .ContinueWith( ( t ) =>
             {

@@ -12,8 +12,16 @@ namespace Crex.tvOS.ViewControllers
     {
         #region Properties
 
+        /// <summary>
+        /// Gets the menu data.
+        /// </summary>
+        /// <value>The menu data.</value>
         protected Rest.Menu MenuData { get; private set; }
 
+        /// <summary>
+        /// Gets the date we last loaded our content.
+        /// </summary>
+        /// <value>The date we last loaded our content.</value>
         protected DateTime LastLoadedDate { get; private set; } = DateTime.MinValue;
 
         #endregion
