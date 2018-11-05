@@ -13,6 +13,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:id="@+id/ivBackground"
+		android:alpha="0"
 		android:scaleType="centerCrop" />
 	<Crex.Android.Widgets.LoadingSpinner
 		android:layout_width="80dp"

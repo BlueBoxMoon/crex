@@ -67,6 +67,10 @@ namespace Crex.Android.Activities
                 {
                     BackgroundImageView.SetImageBitmap( image );
 
+                    BackgroundImageView.Animate()
+                        .SetDuration( Crex.Application.Current.Config.AnimationTime.Value )
+                        .Alpha( 1 );
+
                     LoadingSpinnerView.Stop();
                 } );
             } ).ContinueWith( ( t ) =>

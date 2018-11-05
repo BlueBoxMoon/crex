@@ -116,7 +116,7 @@ namespace Crex.Android
         /// <returns>An image of the given width in pixels.</returns>
         public static Bitmap ScaleImageToWidth( Bitmap originalBitmap, int width )
         {
-            float ratio = originalBitmap.Width / width;
+            float ratio = originalBitmap.Width / ( float ) width;
 
             return Bitmap.CreateScaledBitmap( originalBitmap, width, ( int ) ( originalBitmap.Height / ratio ), true );
         }
