@@ -18,43 +18,45 @@ function ReadCrexConfig() as object
   rem --
   rem -- Add in any root config elements.
   rem --
-  if config.LoadingSpinner = invalid
-    config.LoadingSpinner = config.CrexRoot + "Images/spinner.png"
-  end if
-  if config.ApplicationRootTemplate = invalid
-    config.ApplicationRootTemplate = "Menu"
-  end if
-  if config.AnimationTime = invalid
-    config.AnimationTime = 0.25
-  end if
+  config.LoadingSpinner = GetValueOrDefault(config.LoadingSpinner, config.CrexRoot + "Images/spinner.png")
+  config.ApplicationRootTemplate = GetValueOrDefault(config.ApplicationRootTemplate, "Menu")
+  config.AnimationTime = GetValueOrDefault(config.AnimationTime, 0.25)
+  config.MenuBarBackgroundColor = GetValueOrDefault(config.MenuBarBackgroundColor, "0x121212B2")
 
   rem --
   rem -- Add in any missing Video Player configuration options.
   rem --
-  if config.VideoPlayer = invalid
-    config.VideoPlayer = {}
-  end if
-  if config.VideoPlayer.FilledBarBlendColor = invalid
-    config.VideoPlayer.FilledBarBlendColor = "0x808080FF"
-  end if
+  config.VideoPlayer = GetValueOrDefault(config.VideoPlayer, {})
+  config.VideoPlayer.FilledBarBlendColor = GetValueOrDefault(config.VideoPlayer.FilledBarBlendColor, "0x808080FF")
 
   rem --
-  rem -- Add in any missing MenuBar default configuration options.
+  rem -- Add in any missing Button default configuration options.
   rem --
-  if config.MenuBar = invalid
-    config.MenuBar = {}
-  end if
-  if config.MenuBar.BackgroundColor = invalid
-    config.MenuBar.BackgroundColor = "0x121212B2"
-  end if
-  if config.MenuBar.FocusedTextColor = invalid
-    config.MenuBar.FocusedTextColor = "0xDDDDDDFF"
-  end if
-  if config.MenuBar.UnfocusedTextColor = invalid
-    config.MenuBar.UnfocusedTextColor = "0x808080FF"
-  end if
+  config.Buttons = GetValueOrDefault(config.Buttons, {})
+  config.Buttons.FocusedTextColor = GetValueOrDefault(config.Buttons.FocusedTextColor, "0x323232FF")
+  config.Buttons.FocusedBackgroundColor = GetValueOrDefault(config.Buttons.FocusedBackgroundColor, "0xDDDDDDFF")
+  config.Buttons.UnfocusedTextColor = GetValueOrDefault(config.Buttons.UnfocusedTextColor, "0x808080FF")
+  config.Buttons.UnfocusedBackgroundColor = GetValueOrDefault(config.Buttons.UnfocusedBackgroundColor, "0x00000000")
 
   return config
+end function
+
+
+rem --
+rem -- GetValueOrDefault(value, default)
+rem --
+rem -- Returns either the value or if it is invalid then the default value.
+rem --
+rem -- @param value The value to be returned if valid
+rem -- @param default The default value to return if value is invalid
+rem -- @returns Either the value or the default
+rem --
+function GetValueOrDefault(value, default) as object
+  if value = invalid
+    return default
+  end if
+
+  return value
 end function
 
 
@@ -200,10 +202,12 @@ function BestMatchingUrl(urlset as object) as string
   end if
 
   for i=0 to images.count() step 1
-    if type(images[i]) = "String"
+    if type(images[i]) = "String" or type(images[i]) = "roString"
       return images[i]
     end if
   end for
+
+  return ""
 end function
 
 
