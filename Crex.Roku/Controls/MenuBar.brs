@@ -11,7 +11,7 @@ sub init()
   rem --
   config = ReadCache(m, "config")
   m.gButtons = m.top.findNode("gButtons")
-  m.top.color = config.MenuBar.BackgroundColor
+  m.top.color = config.MenuBarBackgroundColor
   m.selectedButtonIndex = invalid
 
   rem --
@@ -51,7 +51,7 @@ sub onButtonsChange()
     rem -- and a width of 0 to make it automatically size.
     rem --
     btn = m.gButtons.createChild("MenuButton")
-    btn.height = m.top.height
+    btn.height = Int(m.top.height/1.875)
     btn.text = b
 
     rem --
@@ -81,7 +81,7 @@ sub onLayoutChange()
   translationX = 0
   for i = 1 to m.gButtons.getChildCount() step 1
     btn = m.gButtons.getChild(i - 1)
-    btn.translation = [translationX, 0]
+    btn.translation = [translationX, Int((m.top.height - btn.height) / 2)]
     translationX = translationX + btn.boundingWidth + m.top.horizSpacing
   end for
 

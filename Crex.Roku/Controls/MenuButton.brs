@@ -9,13 +9,16 @@ sub init()
   rem -- Set initial control values.
   rem --
   m.lblText = m.top.findNode("lblText")
+  m.rBackground = m.top.findNode("rBackground")
 
   rem --
   rem -- Configure the button images.
   rem --
   config = ReadCache(m, "config")
-  m.focusedTextColor = config.MenuBar.FocusedTextColor
-  m.unfocusedTextColor = config.MenuBar.UnfocusedTextColor
+  m.focusedTextColor = config.Buttons.FocusedTextColor
+  m.focusedBackgroundColor = config.Buttons.FocusedBackgroundColor
+  m.unfocusedTextColor = config.Buttons.UnfocusedTextColor
+  m.unfocusedBackgroundColor = config.Buttons.UnfocusedBackgroundColor
 
   rem --
   rem -- Observe the fields we need to monitor for changes.
@@ -39,20 +42,32 @@ sub onSizeChange()
   rem --
   m.lblText.text = m.top.text
   m.lblText.height = m.top.height
-  m.lblText.translation = [0, 0]
+  m.lblText.font.size = Int(m.top.height / 2)
+  padding = Int(m.top.height / 3)
+  m.lblText.translation = [padding, Int(m.top.height / 20)]
 
   rem --
   rem -- Determine the width of the button.
   rem --
-  m.lblText.width = 0
-  width = m.lblText.boundingRect().width
-  m.lblText.width = width
+  if m.top.width = 0
+    m.lblText.width = 0
+    m.lblText.width = m.lblText.boundingRect().width
+  else
+    m.lblText.width = m.top.width - (padding * 2)
+  end if
+
+  rem --
+  rem -- Setup the rectangle size
+  rem --
+  m.rBackground.height = m.top.height
+  m.rBackground.width = m.lblText.width + (padding * 2)
+  m.rBackground.translation = [0, 0]
 
   rem --
   rem -- Finally, update our boundingWidth so that the MenuBar knows how
   rem -- much space this button is taking up.
   rem --
-  m.top.boundingWidth = width
+  m.top.boundingWidth = m.rBackground.width
 
   rem --
   rem -- Make sure all the colors and such are set.
@@ -68,8 +83,10 @@ rem -- match.
 rem --
 sub onFocusedChildChange()
   if m.top.HasFocus()
-    m.lblText.color = m.FocusedTextColor
+    m.lblText.color = m.focusedTextColor
+    m.rBackground.color = m.focusedBackgroundColor
   else
-    m.lblText.color = m.UnfocusedTextColor
+    m.lblText.color = m.unfocusedTextColor
+    m.rBackground.color = m.unfocusedBackgroundColor
   end if
 end sub

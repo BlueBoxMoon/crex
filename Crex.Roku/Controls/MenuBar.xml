@@ -6,7 +6,7 @@
 
   <interface>
     <field id="buttons" type="stringarray" onChange="onButtonsChange" />
-    <field id="horizSpacing" type="integer" value="40" onChange="onLayoutChange" />
+    <field id="horizSpacing" type="integer" value="0" onChange="onLayoutChange" />
 
     <field id="selectedButton" type="node" />
     <field id="selectedButtonIndex" type="integer" alwaysNotify="true" />
