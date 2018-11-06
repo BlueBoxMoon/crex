@@ -338,3 +338,6 @@ ASALocalRun/
 **/*.Droid/**/[Rr]esource.[Dd]esigner.cs
 **/Android/**/[Rr]esource.[Dd]esigner.cs
 **/Droid/**/[Rr]esource.[Dd]esigner.cs
+
+# Roku files
+/DevApps/Roku/out
