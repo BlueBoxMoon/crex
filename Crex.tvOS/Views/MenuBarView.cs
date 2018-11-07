@@ -27,7 +27,7 @@ namespace Crex.tvOS.Views
         public MenuBarView()
             : base()
         {
-            BackgroundColor = Crex.Application.Current.Config.MenuBar.BackgroundColor.AsUIColor();
+            BackgroundColor = Crex.Application.Current.Config.MenuBarBackgroundColor.AsUIColor();
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace Crex.tvOS.Views
         public MenuBarView( CGRect frame )
             : base( frame )
         {
-            BackgroundColor = Crex.Application.Current.Config.MenuBar.BackgroundColor.AsUIColor();
+            BackgroundColor = Crex.Application.Current.Config.MenuBarBackgroundColor.AsUIColor();
         }
 
         #endregion
@@ -64,20 +64,18 @@ namespace Crex.tvOS.Views
             int buttonIndex = 0;
             foreach ( var title in titles )
             {
-                var button = new UIButton( UIButtonType.Custom )
+                var button = new MenuButton()
                 {
                     Tag = buttonIndex++
                 };
 
                 button.TitleLabel.Font = UIFont.SystemFontOfSize( 34 );
                 button.SetTitle( title.ToUpper(), UIControlState.Normal );
-                button.SetTitleColor( Crex.Application.Current.Config.MenuBar.FocusedTextColor.AsUIColor(), UIControlState.Focused );
-                button.SetTitleColor( Crex.Application.Current.Config.MenuBar.UnfocusedTextColor.AsUIColor(), UIControlState.Normal );
                 button.SizeToFit();
 
                 button.PrimaryActionTriggered += ( sender, e ) =>
                 {
-                    ButtonClicked?.Invoke( this, new ButtonClickEventArgs( ( int ) ( ( UIButton ) sender ).Tag ) );
+                    ButtonClicked?.Invoke( this, new ButtonClickEventArgs( ( int ) ( ( MenuButton ) sender ).Tag ) );
                 };
 
                 AddSubview( button );
@@ -91,7 +89,7 @@ namespace Crex.tvOS.Views
         /// </summary>
         private void LayoutButtons()
         {
-            var buttons = Subviews.Cast<UIButton>().ToList();
+            var buttons = Subviews.Cast<MenuButton>().ToList();
             nfloat totalWidth = 0;
 
             if ( buttons.Count == 0 )
@@ -107,7 +105,6 @@ namespace Crex.tvOS.Views
                 b.SizeToFit();
                 totalWidth += b.Frame.Width;
             } );
-            totalWidth += ( buttons.Count - 1 ) * 40;
 
             //
             // Get our starting position of the first button.
@@ -119,11 +116,11 @@ namespace Crex.tvOS.Views
             //
             buttons.ForEach( b =>
             {
-                nfloat y = ( Bounds.Size.Height - b.Frame.Size.Height ) / 2.0f;
+                nfloat y = Bounds.Size.Height / 4.0f;
 
-                b.Frame = new CGRect( x, y, b.Frame.Size.Width, b.Frame.Size.Height );
+                b.Frame = new CGRect( x, y, b.Frame.Size.Width, Bounds.Size.Height / 2.0f );
 
-                x += b.Frame.Size.Width + 40;
+                x += b.Frame.Size.Width;
             } );
         }
 

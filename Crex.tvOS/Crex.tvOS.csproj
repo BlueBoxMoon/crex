@@ -74,6 +74,7 @@
     <Compile Include="Views\TopAlignedLabel.cs" />
     <Compile Include="Views\PosterViewCell.cs" />
     <Compile Include="ViewControllers\VideoViewController.cs" />
+    <Compile Include="Views\MenuButton.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\crex-default-spinner.png" />

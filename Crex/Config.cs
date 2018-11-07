@@ -72,12 +72,21 @@ namespace Crex
         public int? LoadingSpinnerDelay { get; set; }
 
         /// <summary>
-        /// Gets or sets the menu bar settings.
+        /// Gets or sets the color of the menu bar background.
         /// </summary>
         /// <value>
-        /// The menu bar settings.
+        /// The color of the menu bar background.
         /// </value>
-        public MenuBarConfig MenuBar { get; set; }
+        [DefaultValue( "#b2121212" )]
+        public string MenuBarBackgroundColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the button settings.
+        /// </summary>
+        /// <value>
+        /// The button settings.
+        /// </value>
+        public ButtonsConfig Buttons { get; set; }
 
         #endregion
 
@@ -113,18 +122,18 @@ namespace Crex
             }
 
             //
-            // Make sure we have a valid menu bar object.
+            // Make sure we have a valid buttons object.
             //
-            if ( config.MenuBar == null )
+            if ( config.Buttons == null )
             {
-                config.MenuBar = new MenuBarConfig();
+                config.Buttons = new ButtonsConfig();
             }
 
             //
             // Set some sane defaults.
             //
             InitializeDefaultValues( config );
-            InitializeDefaultValues( config.MenuBar );
+            InitializeDefaultValues( config.Buttons );
 
             return config;
         }
@@ -162,25 +171,23 @@ namespace Crex
         }
     }
 
-    public class MenuBarConfig
+    public class ButtonsConfig
     {
-        /// <summary>
-        /// Gets or sets the color of the background.
-        /// </summary>
-        /// <value>
-        /// The color of the background.
-        /// </value>
-        [DefaultValue( "#b2121212" )]
-        public string BackgroundColor { get; set; }
-
         /// <summary>
         /// Gets or sets the color of the focused text.
         /// </summary>
         /// <value>
         /// The color of the focused text.
         /// </value>
-        [DefaultValue( "#dddddd" )]
+        [DefaultValue( "#ff323232" )]
         public string FocusedTextColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color of the focused background.
+        /// </summary>
+        /// <value>The color of the focused background.</value>
+        [DefaultValue( "#ffdddddd" )]
+        public string FocusedBackgroundColor { get; set; }
 
         /// <summary>
         /// Gets or sets the color of the unfocused text.
@@ -188,7 +195,14 @@ namespace Crex
         /// <value>
         /// The color of the unfocused text.
         /// </value>
-        [DefaultValue( "#808080" )]
+        [DefaultValue( "#ff808080" )]
         public string UnfocusedTextColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color of the unfocused background.
+        /// </summary>
+        /// <value>The color of the unfocused background.</value>
+        [DefaultValue( "#00000000" )]
+        public string UnfocusedBackgroundColor { get; set; }
     }
 }
