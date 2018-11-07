@@ -91,7 +91,7 @@ sub onNotificationChange()
     m.aSlide.control = "start"
     m.top.state = "visible"
   else
-    LogMessage("Delay start")
+    m.pImage.uri = ""
     m.pImage.uri = BestMatchingUrl(m.top.notification.Image)
     m.pImage.visible = true
   end if

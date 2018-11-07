@@ -252,13 +252,13 @@ rem * Registry Functions
 rem *******************************************************
 
 rem --
-rem -- RegistryRead(key, section)
+rem -- RegistryRead(section, key)
 rem --
 rem -- Read a value from the registry.
 rem --
 rem -- @param section The section of the registry to read from.
 rem -- @param key The registry key to be read.
-rem -- @returns The value in the registry or invalid if not found.
+rem -- @returns The string value in the registry or invalid if not found.
 rem --
 function RegistryRead(section as string, key as string) as dynamic
   sec = CreateObject("roRegistrySection", section)

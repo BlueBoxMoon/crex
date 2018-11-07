@@ -4,6 +4,7 @@
     <Group id="gMainMenu" visible="false">
       <Poster id="pBackground" />
       <MenuBar id="mbMenuBar" />
+      <Notification id="nNotification" visible="false" />
     </Group>
 
     <BusySpinner id="bsLoading" />

@@ -12,6 +12,7 @@ sub init()
   m.gMainMenu = m.top.findNode("gMainMenu")
   m.pBackground = m.top.findNode("pBackground")
   m.mbMenuBar = m.top.findNode("mbMenuBar")
+  m.nNotification = m.top.findNode("nNotification")
   m.bsLoading = m.top.findNode("bsLoading")
   m.aFadeMenu = m.top.findNode("aFadeMenu")
   m.task = invalid
@@ -37,8 +38,8 @@ sub init()
     m.mbMenuBar.width = 1920
     m.mbMenuBar.height = 120
     m.bsLoading.translation = [912, 492]
-    m.bsLoading.poster.width = 96
-    m.bsLoading.poster.height = 96
+    m.bsLoading.poster.width = 160
+    m.bsLoading.poster.height = 160
   else
     rem --
     rem -- Configure for 1280x720.
@@ -47,8 +48,8 @@ sub init()
     m.mbMenuBar.width = 1280
     m.mbMenuBar.height = 80
     m.bsLoading.translation = [592, 312]
-    m.bsLoading.poster.width = 96
-    m.bsLoading.poster.height = 96
+    m.bsLoading.poster.width = 106
+    m.bsLoading.poster.height = 106
   end if
 
   rem --
@@ -57,6 +58,8 @@ sub init()
   m.top.observeField("focusedChild", "onFocusedChildChange")
   m.pBackground.observeField("loadStatus", "onBackgroundStatus")
   m.mbMenuBar.observeField("selectedButtonIndex", "onSelectedButtonIndex")
+  m.aFadeMenu.observeField("state", "onFadeMenuState")
+  m.nNotification.observeField("state", "onNotificationStateChange")
 
   rem --
   rem -- Show the loading spinner.
@@ -68,10 +71,57 @@ rem *******************************************************
 rem ** METHODS
 rem *******************************************************
 
+rem --
+rem -- showNextNotification()
+rem --
+rem -- Shows the next notification in our list of notifications. The
+rem -- notification must have a date that is later than the last seen
+rem -- notification and also before now.
+rem --
+sub showNextNotification()
+  if m.config.Notifications = invalid
+    return
+  end if
+
+  lastNotification = RegistryRead("Crex", "LastSeenNotification")
+  if lastNotification <> invalid
+    lastNotification = Val(lastNotification, 10)
+  else
+    lastNotification = 0
+  end if
+
+  now = CreateObject("roDateTime").AsSeconds()
+
+  for each notification in m.config.Notifications
+    if notification.StartDateTimeSeconds > lastNotification and notification.StartDateTimeSeconds <= now
+      m.nNotification.visible = true
+      m.nNotification.notification = notification
+      return
+    end if
+  end for
+end sub
 
 rem *******************************************************
 rem ** EVENT HANDLERS
 rem *******************************************************
+
+rem --
+rem -- onNotificationStateChange
+rem --
+rem -- Called when the notification state has changed. If the user has
+rem -- dismissed the notification then update our registry and show the
+rem -- next notification (if any).
+rem --
+sub onNotificationStateChange()
+  if m.nNotification.state = "dismissed"
+    m.nNotification.visible = false
+    RegistryWrite("Crex", "LastSeenNotification", m.nNotification.notification.StartDateTimeSeconds.ToStr())
+    m.mbMenuBar.SetFocus(true)
+
+    showNextNotification()
+  end if
+end sub
+
 
 rem --
 rem -- onDataChange()
@@ -106,7 +156,21 @@ sub onContentChanged()
       ShowUpdateRequiredDialog()
       return
     end if
-    
+
+    rem --
+    rem -- Pre-process any notifications to get the date as seconds
+    rem --
+    if m.config.Notifications <> invalid
+      for each notification in m.config.Notifications
+        startDateTime = CreateObject("roDateTime")
+        startDateTime.FromISO8601String(notification.StartDateTime)
+        notification.StartDateTimeSeconds = startDateTime.AsSeconds()
+      end for
+      rem -- This method requires the key be in all lowercase
+      m.config.Notifications.SortBy("startdatetimeseconds")
+    end if
+
+
     rem --
     rem -- Configure UI elements with the configuration options.
     rem --
@@ -136,7 +200,7 @@ rem -- The focus has changed to or from us. If it was set to us then make
 rem -- sure the item list control has the actual focus.
 rem --
 sub onFocusedChildChange()
-  if m.top.IsInFocusChain() and not m.mbMenuBar.HasFocus()
+  if m.top.IsInFocusChain() and m.top.HasFocus()
     m.mbMenuBar.SetFocus(true)
   end if
 end sub
@@ -177,6 +241,8 @@ sub onFadeMenuState()
   if m.aFadeMenu.state = "stopped"
     m.bsLoading.control = "stop"
     m.bsLoading.visible = false
+
+    showNextNotification()
   end if
 end sub
 
@@ -191,3 +257,34 @@ sub onSelectedButtonIndex()
 
   m.top.crexScene.callFunc("ShowItem", item.Action)
 end sub
+
+rem --
+rem -- onKeyEvent(key, press)
+rem --
+rem -- Called when the user presses a button on the remote. Check if we
+rem -- need to handle any keys to change selection or activate their
+rem -- current button.
+rem --
+rem -- @param key Contains the key that was pressed on the remote.
+rem -- @param press True if the button was pressed, false if released.
+rem -- @returns True if the key was handled, false otherwise.
+rem --
+function onKeyEvent(key as string, press as boolean) as boolean
+  if press
+    if key = "up" and m.nNotification.visible
+      if not m.nNotification.IsInFocusChain()
+        m.nNotification.SetFocus(true)
+      end if
+
+      return true
+    else if key = "down"
+      if not m.mbMenuBar.IsInFocusChain()
+        m.mbMenuBar.SetFocus(true)
+      end if
+
+      return true
+    end if
+  end if
+
+  return false
+end function
