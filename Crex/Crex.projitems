@@ -19,5 +19,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Rest\PosterList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\PosterListItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\UrlSet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\Notification.cs" />
   </ItemGroup>
 </Project>
