@@ -25,7 +25,7 @@ namespace Crex.tvOS.Views
         /// Gets the index of the focused button.
         /// </summary>
         /// <value>The index of the focused button.</value>
-        protected int FocusedButtonIndex { get; private set; } = 1;
+        protected int FocusedButtonIndex { get; private set; } = 0;
 
         #endregion
 
@@ -55,21 +55,16 @@ namespace Crex.tvOS.Views
         #region Base Method Overrides
 
         /// <summary>
-        /// Gets the preferred focused view.
+        /// Gets the preferred focus environments.
         /// </summary>
-        /// <value>The preferred focused view.</value>
-        public override UIView PreferredFocusedView
+        /// <value>The preferred focus environments.</value>
+        public override IUIFocusEnvironment[] PreferredFocusEnvironments
         {
             get
             {
                 var buttons = Subviews.Cast<MenuButton>().ToList();
 
-                if ( FocusedButtonIndex >= buttons.Count )
-                {
-                    return base.PreferredFocusedView;
-                }
-
-                return buttons[FocusedButtonIndex];
+                return FocusedButtonIndex >= buttons.Count ? base.PreferredFocusEnvironments : ( new[] { buttons[FocusedButtonIndex] } );
             }
         }
 
@@ -89,7 +84,6 @@ namespace Crex.tvOS.Views
             {
                 if ( context.NextFocusedView == buttons[i])
                 {
-                    Console.WriteLine( "Updated index" );
                     FocusedButtonIndex = i;
                 }
             }

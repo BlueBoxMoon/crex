@@ -71,6 +71,7 @@ namespace Crex.tvOS.Views
                 }
 
                 ImageView.Hidden = true;
+                ImageView.Alpha = 1;
                 IsRunning = true;
 
                 if ( AutoShowTimer != null )
