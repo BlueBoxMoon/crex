@@ -2,14 +2,44 @@
 using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
+using Foundation;
 using UIKit;
 
 using Crex.Extensions;
+using Crex.tvOS.ViewControllers;
 
-namespace Crex.tvOS.ViewControllers
+namespace Crex.tvOS.Templates
 {
     public class MenuViewController : CrexBaseViewController
     {
+        #region Views
+
+        /// <summary>
+        /// Gets the background image view.
+        /// </summary>
+        /// <value>The background image view.</value>
+        protected UIImageView BackgroundImageView { get; private set; }
+
+        /// <summary>
+        /// Gets the menu bar view.
+        /// </summary>
+        /// <value>The menu bar view.</value>
+        protected Views.MenuBarView MenuBarView { get; private set; }
+
+        /// <summary>
+        /// Gets the loading spinner view.
+        /// </summary>
+        /// <value>The loading spinner view.</value>
+        protected Views.LoadingSpinnerView LoadingSpinnerView { get; private set; }
+
+        /// <summary>
+        /// Gets the notification view controller.
+        /// </summary>
+        /// <value>The notification view controller.</value>
+        protected NotificationViewController NotificationViewController { get; private set; }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -23,14 +53,6 @@ namespace Crex.tvOS.ViewControllers
         /// </summary>
         /// <value>The date we last loaded our content.</value>
         protected DateTime LastLoadedDate { get; private set; } = DateTime.MinValue;
-
-        #endregion
-
-        #region Views
-
-        protected UIImageView BackgroundImageView { get; private set; }
-        protected Views.MenuBarView MenuBarView { get; private set; }
-        protected Views.LoadingSpinnerView LoadingSpinnerView { get; private set; }
 
         #endregion
 
@@ -59,6 +81,40 @@ namespace Crex.tvOS.ViewControllers
             LoadingSpinnerView = new Views.LoadingSpinnerView( new CGRect( 880, 460, 160, 160 ) );
             View.AddSubview( LoadingSpinnerView );
 
+            //
+            // Setup the notification view controller.
+            //
+            NotificationViewController = new NotificationViewController();
+            AddChildViewController( NotificationViewController );
+            View.AddSubview( NotificationViewController.View );
+            NotificationViewController.DidMoveToParentViewController( this );
+            NotificationViewController.NotificationWasDismissed += ( sender, arg ) =>
+            {
+                View.SetNeedsFocusUpdate();
+
+                Task.Run( async () =>
+                {
+                    //
+                    // Slight pause to let the focus animations settle.
+                    //
+                    await Task.Delay( 500 );
+
+                    InvokeOnMainThread( ShowNextNotification );
+                } );
+            };
+            NotificationViewController.FocusGuide.PreferredFocusEnvironments = new[] { MenuBarView };
+
+            //
+            // Setup the focus guide for when the users moves up from the menu bar.
+            //
+            var menuBarUpFocusGuide = new UIFocusGuide();
+            View.AddLayoutGuide( menuBarUpFocusGuide );
+            menuBarUpFocusGuide.LeftAnchor.ConstraintEqualTo( MenuBarView.LeftAnchor ).Active = true;
+            menuBarUpFocusGuide.RightAnchor.ConstraintEqualTo( MenuBarView.RightAnchor ).Active = true;
+            menuBarUpFocusGuide.TopAnchor.ConstraintEqualTo( MenuBarView.TopAnchor, -64 ).Active = true;
+            menuBarUpFocusGuide.BottomAnchor.ConstraintEqualTo( MenuBarView.TopAnchor ).Active = true;
+            menuBarUpFocusGuide.PreferredFocusEnvironments = new[] { NotificationViewController.View };
+
             LoadingSpinnerView.Start();
         }
 
@@ -69,12 +125,16 @@ namespace Crex.tvOS.ViewControllers
         /// <param name="animated">If set to <c>true</c> animated.</param>
         public override void ViewWillAppear( bool animated )
         {
+            // TODO: Remove!
+            NSUserDefaults.StandardUserDefaults.SetString( "", "Crex.LastSeenNotification" );
             base.ViewWillAppear( animated );
 
             if ( DateTime.Now.Subtract( LastLoadedDate ).TotalSeconds > Crex.Application.Current.Config.ContentCacheTime.Value )
             {
                 LoadContentInBackground();
             }
+
+            Console.WriteLine( NotificationViewController.View.Frame );
         }
 
         #endregion
@@ -135,6 +195,8 @@ namespace Crex.tvOS.ViewControllers
                         MenuBarView.Alpha = 1;
                     } );
 
+                    ShowNextNotification();
+
                     LoadingSpinnerView.Stop();
                 } );
 
@@ -147,6 +209,43 @@ namespace Crex.tvOS.ViewControllers
                     ShowDataErrorDialog( LoadContentInBackground );
                 }
             } );
+        }
+
+        /// <summary>
+        /// Shows the next notification that needs to be displayed.
+        /// </summary>
+        protected void ShowNextNotification()
+        {
+            if ( MenuData.Notifications == null )
+            {
+                return;
+            }
+
+            //
+            // Get the current time and the last notification date we saw.
+            //
+            var now = DateTime.Now;
+            if ( !DateTime.TryParse( NSUserDefaults.StandardUserDefaults.StringForKey( "Crex.LastSeenNotification" ), out DateTime lastSeenNotification ) )
+            {
+                lastSeenNotification = DateTime.MinValue;
+            }
+
+            //
+            // Find the next notification.
+            //
+            var notification = MenuData.Notifications
+                                       .Where( n => n.StartDateTime > lastSeenNotification && n.StartDateTime <= now )
+                                       .OrderBy( n => n.StartDateTime )
+                                       .FirstOrDefault();
+
+            //
+            // If we have another notification, show it.
+            //
+            if (notification != null )
+            {
+                NotificationViewController.ShowNotification( notification );
+            }
+
         }
 
         #endregion

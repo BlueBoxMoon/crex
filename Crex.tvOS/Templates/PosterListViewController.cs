@@ -7,7 +7,7 @@ using UIKit;
 using Crex.Extensions;
 using Crex.tvOS.Extensions;
 
-namespace Crex.tvOS.ViewControllers
+namespace Crex.tvOS.Templates
 {
     public class PosterListViewController : CrexBaseViewController, IUITableViewDataSource, IUITableViewDelegate
     {

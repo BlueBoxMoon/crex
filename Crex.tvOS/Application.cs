@@ -68,7 +68,7 @@ namespace Crex.tvOS
         /// <param name="template">Template.</param>
         private CrexBaseViewController GetViewControllerForTemplate(string template)
         {
-            var type = Type.GetType( $"Crex.tvOS.ViewControllers.{ template }ViewController" );
+            var type = Type.GetType( $"Crex.tvOS.Templates.{ template }ViewController" );
 
             if ( type == null )
             {

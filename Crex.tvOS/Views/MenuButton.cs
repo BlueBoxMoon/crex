@@ -1,4 +1,5 @@
-﻿using Crex.tvOS.Extensions;
+﻿using CoreGraphics;
+using Crex.tvOS.Extensions;
 using Foundation;
 using UIKit;
 
@@ -17,6 +18,16 @@ namespace Crex.tvOS.Views
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="T:Crex.tvOS.Views.MenuButton"/> class.
+        /// </summary>
+        /// <param name="frame">Initial frame of the button.</param>
+        public MenuButton( CGRect frame )
+            : this()
+        {
+            Frame = frame;
+        }
+
+        /// <summary>
         /// Sizes the control to fit the width required by it's content. Does
         /// not affect the height of the control.
         /// </summary>
@@ -26,7 +37,7 @@ namespace Crex.tvOS.Views
 
             SizeToFit();
 
-            Frame = new CoreGraphics.CGRect( Frame.Location.X, Frame.Location.Y, Frame.Size.Width, frame.Size.Height );
+            Frame = new CGRect( Frame.Location.X, Frame.Location.Y, Frame.Size.Width, frame.Size.Height );
         }
 
         /// <summary>
@@ -36,7 +47,7 @@ namespace Crex.tvOS.Views
         {
             base.SizeToFit();
 
-            Frame = new CoreGraphics.CGRect( Frame.Location.X, Frame.Location.Y, Frame.Size.Width + 40, Frame.Size.Height );
+            Frame = new CGRect( Frame.Location.X, Frame.Location.Y, Frame.Size.Width + 40, Frame.Size.Height );
         }
 
         /// <summary>

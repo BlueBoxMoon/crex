@@ -7,7 +7,7 @@ using Crex.Extensions;
 using Foundation;
 using UIKit;
 
-namespace Crex.tvOS.ViewControllers
+namespace Crex.tvOS.Templates
 {
     public class VideoViewController : CrexBaseViewController
     {

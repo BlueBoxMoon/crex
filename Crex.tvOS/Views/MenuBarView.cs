@@ -19,6 +19,16 @@ namespace Crex.tvOS.Views
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets the index of the focused button.
+        /// </summary>
+        /// <value>The index of the focused button.</value>
+        protected int FocusedButtonIndex { get; private set; } = 1;
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
@@ -38,6 +48,51 @@ namespace Crex.tvOS.Views
             : base( frame )
         {
             BackgroundColor = Crex.Application.Current.Config.MenuBarBackgroundColor.AsUIColor();
+        }
+
+        #endregion
+
+        #region Base Method Overrides
+
+        /// <summary>
+        /// Gets the preferred focused view.
+        /// </summary>
+        /// <value>The preferred focused view.</value>
+        public override UIView PreferredFocusedView
+        {
+            get
+            {
+                var buttons = Subviews.Cast<MenuButton>().ToList();
+
+                if ( FocusedButtonIndex >= buttons.Count )
+                {
+                    return base.PreferredFocusedView;
+                }
+
+                return buttons[FocusedButtonIndex];
+            }
+        }
+
+        /// <summary>
+        /// The focus has moved to a new control. Track the focused button
+        /// if it's one of ours.
+        /// </summary>
+        /// <param name="context">Focus update context.</param>
+        /// <param name="coordinator">Focus animation coordinator.</param>
+        public override void DidUpdateFocus( UIFocusUpdateContext context, UIFocusAnimationCoordinator coordinator )
+        {
+            base.DidUpdateFocus( context, coordinator );
+
+            var buttons = Subviews.Cast<MenuButton>().ToList();
+
+            for ( int i = 0; i < buttons.Count;  i++ )
+            {
+                if ( context.NextFocusedView == buttons[i])
+                {
+                    Console.WriteLine( "Updated index" );
+                    FocusedButtonIndex = i;
+                }
+            }
         }
 
         #endregion

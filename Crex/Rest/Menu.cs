@@ -21,6 +21,12 @@ namespace Crex.Rest
         public List<MenuButton> Buttons { get; set; }
 
         /// <summary>
+        /// Gets or sets the notifications that should be displayed.
+        /// </summary>
+        /// <value>The notifications that should be displayed.</value>
+        public List<Notification> Notifications { get; set; }
+
+        /// <summary>
         /// Gets or sets the required crex version.
         /// </summary>
         /// <value>

@@ -6,7 +6,7 @@ using UIKit;
 
 using Crex.Extensions;
 
-namespace Crex.tvOS.ViewControllers
+namespace Crex.tvOS.Templates
 {
     public class ImageViewController : CrexBaseViewController
     {
