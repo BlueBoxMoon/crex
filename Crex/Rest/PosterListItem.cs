@@ -42,6 +42,10 @@
         /// </value>
         public CrexAction Action { get; set; }
 
+        /// <summary>
+        /// Gets or sets the action URL.
+        /// </summary>
+        /// <value>The action URL.</value>
         public string ActionUrl { get; set; }
 
         /// <summary>

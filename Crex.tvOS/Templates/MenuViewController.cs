@@ -291,7 +291,14 @@ namespace Crex.tvOS.Templates
         /// <param name="e">E.</param>
         async void MenuBarView_ButtonClicked( object sender, Views.ButtonClickEventArgs e )
         {
-            await Crex.Application.Current.StartAction( this, MenuData.Buttons[e.Position].Url );
+            if ( MenuData.Buttons[e.Position].Action != null )
+            {
+                await Crex.Application.Current.StartAction( this, MenuData.Buttons[e.Position].Action );
+            }
+            else
+            {
+                await Crex.Application.Current.StartAction( this, MenuData.Buttons[e.Position].ActionUrl );
+            }
         }
 
         #endregion

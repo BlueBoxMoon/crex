@@ -10,7 +10,11 @@
         /// </value>
         public string Title { get; set; }
 
-        public string Url { get; set; }
+        /// <summary>
+        /// Gets or sets the action URL.
+        /// </summary>
+        /// <value>The action URL.</value>
+        public string ActionUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the action.
