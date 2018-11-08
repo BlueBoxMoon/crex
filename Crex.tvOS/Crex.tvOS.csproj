@@ -77,6 +77,8 @@
     <Compile Include="Templates\MenuViewController.cs" />
     <Compile Include="Templates\PosterListViewController.cs" />
     <Compile Include="Templates\VideoViewController.cs" />
+    <Compile Include="ViewControllers\NavigationController.cs" />
+    <Compile Include="Views\FocusView.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\crex-default-spinner.png" />

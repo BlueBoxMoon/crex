@@ -83,93 +83,54 @@ namespace Crex.tvOS.Templates
             ProcessStateChange();
         }
 
+        public override async Task LoadContentAsync()
+        {
+            var urlString = Data.FromJson<string>();
+
+            //if ( LastUrl == urlString && LastPosition.HasValue && !PlaybackAtPosition.HasValue )
+            //{
+            //    ShowResumeDialog();
+            //    return;
+            //}
+
+            PlayerViewController = new AVPlayerViewController
+            {
+                Player = new AVPlayer( new AVPlayerItem( new NSUrl( urlString ) ) )
+            };
+
+            //
+            // Install a notification handler that playback has finished.
+            //
+            DidPlayToEndTimeNotificationHandle = AVPlayerItem.Notifications.ObserveDidPlayToEndTime( ( sender, args ) =>
+            {
+                if ( args.Notification.Object == PlayerViewController.Player.CurrentItem )
+                {
+                    DismissPlayer();
+                }
+            } );
+
+            //
+            // Wait for the status to change. Wait at most 10 seconds.
+            //
+            for ( int i = 0; i < 100; i++ )
+            {
+                if ( PlayerViewController.Player.Status != AVPlayerStatus.Unknown )
+                {
+                    Console.WriteLine( $"Player ready on loop { i }" );
+                    break;
+                }
+                await Task.Delay( 100 );
+            }
+
+            if ( PlayerViewController.Player.Status != AVPlayerStatus.ReadyToPlay )
+            {
+                throw new Exception( "Failed to prepare video" );
+            }
+        }
+
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Loads the content for the menu.
-        /// </summary>
-        private void LoadContentInBackground()
-        {
-            try
-            {
-                var urlString = Data.FromJson<string>();
-
-                if ( LastUrl == urlString && LastPosition.HasValue && !PlaybackAtPosition.HasValue )
-                {
-                    ShowResumeDialog();
-                    return;
-                }
-
-                //
-                // Indicate to the user that we have started loading.
-                //
-                State = 1;
-                LoadingSpinnerView.Start();
-
-                PlayerViewController = new AVPlayerViewController
-                {
-                    Player = new AVPlayer( new AVPlayerItem( new NSUrl( urlString ) ) )
-                };
-
-                //
-                // Install a notification handler that playback has finished.
-                //
-                DidPlayToEndTimeNotificationHandle = AVPlayerItem.Notifications.ObserveDidPlayToEndTime( ( sender, args ) =>
-                {
-                    if ( args.Notification.Object == PlayerViewController.Player.CurrentItem )
-                    {
-                        DismissPlayer();
-                    }
-                } );
-
-                Task.Run( async () =>
-                {
-                    //
-                    // Wait for the status to change. Wait at most 10 seconds.
-                    //
-                    for ( int i = 0; i < 100; i++ )
-                    {
-                        if ( PlayerViewController.Player.Status != AVPlayerStatus.Unknown )
-                        {
-                            Console.WriteLine( $"Player ready on loop { i }" );
-                            break;
-                        }
-                        await Task.Delay( 100 );
-                    }
-
-                    if ( PlayerViewController.Player.Status != AVPlayerStatus.ReadyToPlay )
-                    {
-                        throw new Exception( "Failed to prepare video" );
-                    }
-
-                    PlayerViewController.Player.Seek( CoreMedia.CMTime.FromSeconds( PlaybackAtPosition ?? 0, CoreMedia.CMTime.MaxTimeScale ) );
-                    await PlayerViewController.Player.PrerollAsync( 1.0f );
-
-                    InvokeOnMainThread( () =>
-                    {
-                        State = 2;
-                        LoadingSpinnerView.Stop( () =>
-                        {
-                            PlayerViewController.Player.PlayImmediatelyAtRate( 1.0f );
-                            PresentViewController( PlayerViewController, false, null );
-                        } );
-                    } );
-                } )
-                .ContinueWith( ( t ) =>
-                {
-                    if ( t.IsFaulted )
-                    {
-                        ShowDataErrorDialog( LoadContentInBackground );
-                    }
-                } );
-            }
-            catch
-            {
-                ShowDataErrorDialog( LoadContentInBackground );
-            }
-        }
 
         /// <summary>
         /// Dismisses the player because the playback ended.
@@ -192,7 +153,35 @@ namespace Crex.tvOS.Templates
                 //
                 // Initial state, we need to move to the "loading" state.
                 //
-                LoadContentInBackground();
+                var urlString = Data.FromJson<string>();
+
+                if ( LastUrl == urlString && LastPosition.HasValue && !PlaybackAtPosition.HasValue )
+                {
+                    ShowResumeDialog();
+                    return;
+                }
+
+                State = 1;
+
+                Task.Run( async () =>
+                {
+                    PlayerViewController.Player.Seek( CoreMedia.CMTime.FromSeconds( PlaybackAtPosition ?? 0, CoreMedia.CMTime.MaxTimeScale ) );
+                    await PlayerViewController.Player.PrerollAsync( 1.0f );
+
+                    InvokeOnMainThread( () =>
+                    {
+                        State = 2;
+                        PlayerViewController.Player.PlayImmediatelyAtRate( 1.0f );
+                        PresentViewController( PlayerViewController, false, null );
+                    } );
+                } )
+                .ContinueWith( ( t ) =>
+                {
+                    if ( t.IsFaulted )
+                    {
+                        ShowDataErrorDialog( null );
+                    }
+                } );
             }
             else if ( State == 2 )
             {

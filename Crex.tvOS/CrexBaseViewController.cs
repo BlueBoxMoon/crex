@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using UIKit;
 
 namespace Crex.tvOS
@@ -16,6 +17,28 @@ namespace Crex.tvOS
             {
                 BackgroundColor = new UIColor( 0.07f, 1 )
             };
+        }
+
+        /// <summary>
+        /// Ensures that the view has loaded correctly.
+        /// </summary>
+        public void EnsureView()
+        {
+            if ( View == null )
+            {
+                throw new Exception( "Could not load view" );
+            }
+        }
+
+        /// <summary>
+        /// Loads the content asynchronously.
+        /// </summary>
+        public virtual async Task LoadContentAsync()
+        {
+            //
+            // Silence compiler warnings.
+            //
+            await Task.Delay( 0 );
         }
 
         /// <summary>
@@ -58,16 +81,19 @@ namespace Crex.tvOS
                                                       "An error occurred trying to laod the content. Please try again later.",
                                                       UIAlertControllerStyle.Alert );
 
-                var action = UIAlertAction.Create( "Retry", UIAlertActionStyle.Default, ( alert ) =>
+                if ( retry != null )
                 {
-                    Console.WriteLine( "Retry" );
-                    retry();
-                } );
-                alertController.AddAction( action );
+                    var action = UIAlertAction.Create( "Retry", UIAlertActionStyle.Default, ( alert ) =>
+                    {
+                        Console.WriteLine( "Retry" );
+                        retry();
+                    } );
+                    alertController.AddAction( action );
+                }
 
                 if ( NavigationController.ViewControllers[0] != this )
                 {
-                    action = UIAlertAction.Create( "Cancel", UIAlertActionStyle.Cancel, ( alert ) =>
+                    var action = UIAlertAction.Create( "Cancel", UIAlertActionStyle.Cancel, ( alert ) =>
                     {
                         NavigationController.PopViewController( true );
                     } );

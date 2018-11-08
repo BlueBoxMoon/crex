@@ -10,6 +10,8 @@
         /// </value>
         public string Title { get; set; }
 
+        public string Url { get; set; }
+
         /// <summary>
         /// Gets or sets the action.
         /// </summary>

@@ -136,9 +136,9 @@ namespace Crex.tvOS.Templates
         {
             Task.Run( async () =>
             {
-                var url = Data.FromJson<string>();
-                var json = await new System.Net.Http.HttpClient().GetStringAsync( url );
-                var data = json.FromJson<Rest.PosterList>();
+                //var url = Data.FromJson<string>();
+                //var json = await new System.Net.Http.HttpClient().GetStringAsync( url );
+                var data = Data.FromJson<Rest.PosterList>();
 
                 //
                 // If the menu content hasn't actually changed, then ignore.
@@ -220,7 +220,15 @@ namespace Crex.tvOS.Templates
         public void RowSelected( UITableView tableView, NSIndexPath indexPath )
         {
             tableView.SelectRow( NSIndexPath.FromRowSection( 0, -1 ), false, UITableViewScrollPosition.None );
-            Crex.Application.Current.StartAction( this, PosterData.Items[indexPath.Row].Action );
+
+            if ( PosterData.Items[indexPath.Row].Action != null )
+            {
+                Crex.Application.Current.StartAction( this, PosterData.Items[indexPath.Row].Action );
+            }
+            else
+            {
+                Crex.Application.Current.StartAction( this, PosterData.Items[indexPath.Row].ActionUrl );
+            }
         }
 
         /// <summary>

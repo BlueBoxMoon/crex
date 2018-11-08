@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 #if __IOS__
 using UIKit;
 #endif
@@ -82,7 +83,14 @@ namespace Crex
         /// Shows the action specified.
         /// </summary>
         /// <param name="sender">The sender that is starting the action.</param>
+        /// <param name="url">The action url that should be loaded.</param>
+        public abstract Task StartAction( object sender, string url );
+
+        /// <summary>
+        /// Shows the action specified.
+        /// </summary>
+        /// <param name="sender">The sender that is starting the action.</param>
         /// <param name="action">The action that should be loaded.</param>
-        public abstract void StartAction( object sender, Rest.CrexAction action );
+        public abstract Task StartAction( object sender, Rest.CrexAction action );
     }
 }

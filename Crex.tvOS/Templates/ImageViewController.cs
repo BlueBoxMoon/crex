@@ -12,9 +12,11 @@ namespace Crex.tvOS.Templates
     {
         #region Views
 
+        /// <summary>
+        /// Gets the background image view.
+        /// </summary>
+        /// <value>The background image view.</value>
         protected UIImageView BackgroundImageView { get; private set; }
-
-        protected Views.LoadingSpinnerView LoadingSpinnerView { get; set; }
 
         #endregion
 
@@ -27,68 +29,22 @@ namespace Crex.tvOS.Templates
         {
             base.ViewDidLoad();
 
-            BackgroundImageView = new UIImageView( new CGRect( 0, 0, 1920, 1080 ) )
-            {
-                Alpha = 0
-            };
+            BackgroundImageView = new UIImageView( new CGRect( 0, 0, 1920, 1080 ) );
             View.AddSubview( BackgroundImageView );
-
-            LoadingSpinnerView = new Views.LoadingSpinnerView( new CGRect( 880, 460, 160, 160 ) );
-            View.AddSubview( LoadingSpinnerView );
-
-            LoadingSpinnerView.Start();
         }
 
         /// <summary>
-        /// The view is about to appear. Start loading the content.
+        /// Loads the content asynchronously.
         /// </summary>
-        /// <param name="animated">If set to <c>true</c> animated.</param>
-        public override void ViewWillAppear( bool animated )
+        public override async Task LoadContentAsync()
         {
-            base.ViewWillAppear( animated );
+            EnsureView();
 
-            LoadContentInBackground();
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Loads the content for the menu.
-        /// </summary>
-        private void LoadContentInBackground()
-        {
-            Task.Run( async () =>
-            {
-                //
-                // Load the image.
-                //
-                var urlSet = Data.FromJson<Rest.UrlSet>();
-                var image = await Utility.LoadImageFromUrlAsync( urlSet.BestMatch );
-
-                InvokeOnMainThread( () =>
-                {
-                    //
-                    // Update the UI with the image and buttons.
-                    //
-                    BackgroundImageView.Image = image;
-
-                    UIView.Animate( Crex.Application.Current.Config.AnimationTime.Value / 1000.0f, () =>
-                    {
-                        BackgroundImageView.Alpha = 1;
-                    } );
-
-                    LoadingSpinnerView.Stop();
-                } );
-            } )
-            .ContinueWith( ( t ) =>
-            {
-                if ( t.IsFaulted )
-                {
-                    ShowDataErrorDialog( LoadContentInBackground );
-                }
-            } );
+            //
+            // Load the image.
+            //
+            var urlSet = Data.FromJson<Rest.UrlSet>();
+            BackgroundImageView.Image = await Utility.LoadImageFromUrlAsync( urlSet.BestMatch );
         }
 
         #endregion

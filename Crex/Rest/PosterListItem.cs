@@ -42,6 +42,8 @@
         /// </value>
         public CrexAction Action { get; set; }
 
+        public string ActionUrl { get; set; }
+
         /// <summary>
         /// Gets or sets the image.
         /// </summary>

@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Threading.Tasks;
 
+using AVFoundation;
+using Crex.Extensions;
+using Crex.tvOS.ViewControllers;
 using Foundation;
 using UIKit;
 
-using Crex.Extensions;
-using AVFoundation;
 
 namespace Crex.tvOS
 {
@@ -27,11 +29,52 @@ namespace Crex.tvOS
         {
             UIWindow window = ( UIWindow ) sender;
 
-            var rootViewController = GetViewControllerForTemplate( Current.Config.ApplicationRootTemplate );
-            rootViewController.Data = Current.Config.ApplicationRootUrl.ToJson();
+            async void doRun()
+            {
+                var navigationController = new NavigationController();
+                window.RootViewController = navigationController;
 
-            window.RootViewController = new UINavigationController( rootViewController );
-            window.MakeKeyAndVisible();
+                await StartAction( navigationController, Current.Config.ApplicationRootUrl );
+                window.MakeKeyAndVisible();
+            }
+
+            window.InvokeOnMainThread( doRun );
+        }
+
+        /// <summary>
+        /// Starts the specified action.
+        /// </summary>
+        /// <param name="sender">The UIViewController that is starting this action.</param>
+        /// <param name="url">The url to the action to be started.</param>
+        public override async Task StartAction( object sender, string url )
+        {
+            UIViewController viewController = ( UIViewController ) sender;
+            NavigationController navigationController = viewController is NavigationController
+                ? ( NavigationController ) viewController
+                : ( NavigationController ) viewController.NavigationController;
+
+            Console.WriteLine( $"Navigation to { url }" );
+
+            navigationController.ShowLoading();
+
+            //
+            // Retrieve the data from the server.
+            //
+            var json = await new System.Net.Http.HttpClient().GetStringAsync( url );
+            var action = json.FromJson<Rest.CrexAction>();
+
+            //
+            // Check if we were able to load the data.
+            //
+            if ( action == null )
+            {
+                navigationController.HideLoading();
+                ShowDataErrorDialog( navigationController, null );
+
+                return;
+            }
+
+            await StartAction( sender, action );
         }
 
         /// <summary>
@@ -39,26 +82,57 @@ namespace Crex.tvOS
         /// </summary>
         /// <param name="sender">The UIViewController that is starting this action.</param>
         /// <param name="action">The action to be started.</param>
-        public override void StartAction( object sender, Rest.CrexAction action )
+        public override async Task StartAction( object sender, Rest.CrexAction action )
         {
             UIViewController viewController = ( UIViewController ) sender;
+            NavigationController navigationController = viewController is NavigationController
+                ? ( NavigationController ) viewController
+                : ( NavigationController ) viewController.NavigationController;
 
-            Console.WriteLine( $"Navigation to { action.Template }" );
+            navigationController.ShowLoading();
 
             //
             // Check if we can display this action.
             //
             if ( action.RequiredCrexVersion.HasValue && action.RequiredCrexVersion.Value > CrexVersion )
             {
-                ShowUpdateRequiredDialog( viewController );
+                navigationController.HideLoading();
+                ShowUpdateRequiredDialog( viewController, null );
 
                 return;
             }
 
+            //
+            // Load the new view controller from the template.
+            //
             var newViewController = GetViewControllerForTemplate( action.Template );
             newViewController.Data = action.Data.ToJson();
+            try
+            {
+                await newViewController.LoadContentAsync();
+            }
+            catch
+            {
+                navigationController.HideLoading();
+                ShowDataErrorDialog( navigationController, null );
 
-            viewController.NavigationController.PushViewController( newViewController, true );
+                return;
+            }
+
+            //
+            // Either make this new view the root view controller or push it
+            // onto the stack.
+            //
+            if ( viewController is UINavigationController )
+            {
+                ( ( UINavigationController ) viewController ).ViewControllers = new[] { newViewController };
+            }
+            else
+            {
+                viewController.NavigationController.PushViewController( newViewController, true );
+            }
+
+            navigationController.HideLoading();
         }
 
         /// <summary>
@@ -83,7 +157,7 @@ namespace Crex.tvOS
         /// Shows the update required dialog. This displays a message to the
         /// user that an update is required to view the content.
         /// </summary>
-        protected void ShowUpdateRequiredDialog( UIViewController viewController )
+        public static void ShowUpdateRequiredDialog( UIViewController viewController, Action close )
         {
             viewController.InvokeOnMainThread( () =>
             {
@@ -91,8 +165,50 @@ namespace Crex.tvOS
                                                   "An update is required to view this content.",
                                                   UIAlertControllerStyle.Alert );
 
-                var action = UIAlertAction.Create( "Close", UIAlertActionStyle.Cancel, ( alert ) => { } );
-                alertController.AddAction( action );
+                if ( viewController is UINavigationController && ( ( UINavigationController ) viewController ).ViewControllers.Length > 0 )
+                {
+                    var action = UIAlertAction.Create( "Close", UIAlertActionStyle.Cancel, ( alert ) => { close?.Invoke(); } );
+                    alertController.AddAction( action );
+                }
+
+                viewController.PresentViewController( alertController, true, null );
+            } );
+        }
+
+        /// <summary>
+        /// Shows an error to the user indicating that we could not load the
+        /// data correctly. They can Retry or, if not the root view controller,
+        /// they can Cancel.
+        /// </summary>
+        /// <param name="retry">The action to be performed when Retry is pressed.</param>
+        public static void ShowDataErrorDialog( UIViewController viewController, Action retry )
+        {
+            viewController.InvokeOnMainThread( () =>
+            {
+                var alertController = UIAlertController.Create( "Error Loading Data",
+                                                      "An error occurred trying to load the content. Please try again later.",
+                                                      UIAlertControllerStyle.Alert );
+
+                //
+                // If they specified a retry action, include it.
+                //
+                if ( retry != null )
+                {
+                    var action = UIAlertAction.Create( "Retry", UIAlertActionStyle.Default, ( alert ) =>
+                    {
+                        retry?.Invoke();
+                    } );
+                    alertController.AddAction( action );
+                }
+
+                if ( viewController is UINavigationController && ( ( UINavigationController ) viewController ).ViewControllers.Length > 0 )
+                {
+                    var action = UIAlertAction.Create( "Cancel", UIAlertActionStyle.Cancel, ( alert ) =>
+                    {
+                        ( ( UINavigationController ) viewController ).PopViewController( true );
+                    } );
+                    alertController.AddAction( action );
+                }
 
                 viewController.PresentViewController( alertController, true, null );
             } );
