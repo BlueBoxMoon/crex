@@ -40,7 +40,7 @@ namespace Crex.Android.Widgets
             //
             // Set our background color to what is configured.
             //
-            SetBackgroundColor( Color.ParseColor( Crex.Application.Current.Config.MenuBar.BackgroundColor ) );
+            SetBackgroundColor( Color.ParseColor( Crex.Application.Current.Config.MenuBarBackgroundColor ) );
 
             //
             // Ensure that our internal gravity is centered so the buttons line up correctly.
@@ -52,8 +52,8 @@ namespace Crex.Android.Widgets
             // Save a reference to the actual color objects so we don't have to keep
             // creating new color objects each time the selection changes.
             //
-            unfocusedColor = Color.ParseColor( Crex.Application.Current.Config.MenuBar.UnfocusedTextColor );
-            focusedColor = Color.ParseColor( Crex.Application.Current.Config.MenuBar.FocusedTextColor );
+            unfocusedColor = Color.ParseColor( Crex.Application.Current.Config.Buttons.UnfocusedTextColor );
+            focusedColor = Color.ParseColor( Crex.Application.Current.Config.Buttons.FocusedTextColor );
         }
 
         #endregion
@@ -80,8 +80,11 @@ namespace Crex.Android.Widgets
                 button.SetTextColor( unfocusedColor );
                 button.SetTextSize( ComplexUnitType.Dip, 17 );
                 button.SetPadding( 20, 0, 20, 0 );
-                button.FocusChange += button_FocusChange;
-                button.Click += button_Click;
+                button.FocusChange += Button_FocusChange;
+                button.Click += (sender, e) =>
+                {
+                    ButtonClicked?.Invoke( this, new ButtonClickEventArgs( ( int ) ( ( Button ) sender ).Tag ) );
+                };
 
                 AddView( button );
             }
@@ -92,21 +95,11 @@ namespace Crex.Android.Widgets
         #region Events
 
         /// <summary>
-        /// Handles the Click event of the button control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void button_Click( object sender, EventArgs e )
-        {
-            ButtonClicked( this, new ButtonClickEventArgs( ( int ) ( ( Button ) sender ).Tag ) );
-        }
-
-        /// <summary>
         /// Handles the FocusChange event of the button control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="FocusChangeEventArgs"/> instance containing the event data.</param>
-        private void button_FocusChange( object sender, FocusChangeEventArgs e )
+        private void Button_FocusChange( object sender, FocusChangeEventArgs e )
         {
             if ( e.HasFocus )
             {

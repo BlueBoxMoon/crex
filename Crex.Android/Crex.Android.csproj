@@ -68,6 +68,9 @@
     <Compile Include="Activities\VideoActivity.cs" />
     <Compile Include="Widgets\LoadingSpinner.cs" />
     <Compile Include="Widgets\MenuBar.cs" />
+    <Compile Include="Activities\MenuFragment.cs" />
+    <Compile Include="Activities\CrexActivity.cs" />
+    <Compile Include="CrexBaseFragment.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">
@@ -115,6 +118,9 @@
       <Generator>MSBuild:UpdateGeneratedFiles</Generator>
       <SubType>Designer</SubType>
     </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Templates\" />
   </ItemGroup>
   <Import Project="..\Crex\Crex.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
