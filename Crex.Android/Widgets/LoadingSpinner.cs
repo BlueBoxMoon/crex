@@ -191,6 +191,7 @@ namespace Crex.Android.Widgets
             {
                 if ( autoShowTimer != null )
                 {
+                    autoShowTimer.Dispose();
                     autoShowTimer = null;
 
                     if ( !IsRunning )
