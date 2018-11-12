@@ -53,6 +53,8 @@ namespace Crex.Android.Widgets
         public LoadingSpinner( Context context, IAttributeSet attrs )
             : base( context, attrs )
         {
+            Focusable = true;
+
             imageView = new ImageView( Context )
             {
                 Visibility = ViewStates.Invisible
