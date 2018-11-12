@@ -57,20 +57,20 @@
   <ItemGroup>
     <Compile Include="Application.cs" />
     <Compile Include="CrexBaseActivity.cs" />
-    <Compile Include="Activities\MenuActivity.cs" />
     <Compile Include="Dialogs\OnCancelAction.cs" />
     <Compile Include="Dialogs\OnClickAction.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Templates\ImageFragment.cs" />
+    <Compile Include="Templates\PosterListFragment.cs" />
+    <Compile Include="Templates\VideoFragment.cs" />
     <Compile Include="Utility.cs" />
-    <Compile Include="Activities\ImageActivity.cs" />
-    <Compile Include="Activities\PosterListActivity.cs" />
-    <Compile Include="Activities\VideoActivity.cs" />
     <Compile Include="Widgets\LoadingSpinner.cs" />
     <Compile Include="Widgets\MenuBar.cs" />
-    <Compile Include="Activities\MenuFragment.cs" />
+    <Compile Include="Templates\MenuFragment.cs" />
     <Compile Include="Activities\CrexActivity.cs" />
     <Compile Include="CrexBaseFragment.cs" />
+    <Compile Include="Widgets\MenuButton.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">
@@ -90,37 +90,10 @@
     <EmbeddedResource Include="Resources\crex-default-spinner.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\layout\MenuView.axml">
-      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
-      <SubType>Designer</SubType>
-    </AndroidResource>
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="Resources\layout\ImageView.axml">
-      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
-      <SubType>Designer</SubType>
-    </AndroidResource>
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="Resources\layout\PosterListView.axml">
-      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
-      <SubType>Designer</SubType>
-    </AndroidResource>
-  </ItemGroup>
-  <ItemGroup>
     <AndroidResource Include="Resources\layout\PosterListViewItem.axml">
       <Generator>MSBuild:UpdateGeneratedFiles</Generator>
       <SubType>Designer</SubType>
     </AndroidResource>
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="Resources\layout\VideoView.axml">
-      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
-      <SubType>Designer</SubType>
-    </AndroidResource>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Templates\" />
   </ItemGroup>
   <Import Project="..\Crex\Crex.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

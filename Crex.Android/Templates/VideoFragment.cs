@@ -1,22 +1,38 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
 using Android.App;
 using Android.Content;
 using Android.Media;
 using Android.OS;
+using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-
 using Crex.Extensions;
+using Crex.Android.Activities;
 
-namespace Crex.Android.Activities
+namespace Crex.Android.Templates
 {
-    [Activity( Label = "Video" )]
-    public class VideoActivity : Activity
+    public class VideoFragment : CrexBaseFragment
     {
         #region Views
 
+        /// <summary>
+        /// Gets the video view.
+        /// </summary>
+        /// <value>
+        /// The video view.
+        /// </value>
         protected VideoView VideoView { get; private set; }
 
+        /// <summary>
+        /// Gets the loading spinner view.
+        /// </summary>
+        /// <value>
+        /// The loading spinner view.
+        /// </value>
         protected Widgets.LoadingSpinner LoadingSpinnerView { get; private set; }
 
         #endregion
@@ -54,33 +70,49 @@ namespace Crex.Android.Activities
         /// <summary>
         /// Called when the activity is starting.
         /// </summary>
-        protected override void OnCreate( Bundle savedInstanceState )
+        public override void OnViewCreated( View view, Bundle savedInstanceState )
         {
-            base.OnCreate( savedInstanceState );
+            base.OnViewCreated( view, savedInstanceState );
 
-            SetContentView( Resource.Layout.VideoView );
+            var layout = ( FrameLayout ) view;
 
-            VideoView = FindViewById<VideoView>( Resource.Id.vvVideo );
-            LoadingSpinnerView = FindViewById<Widgets.LoadingSpinner>( Resource.Id.lsLoading );
-
+            //
+            // Initialize the video view.
+            //
+            VideoView = new VideoView( Activity )
+            {
+                LayoutParameters = new FrameLayout.LayoutParams( ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent )
+            };
             VideoView.Completion += video_Completion;
             VideoView.Error += video_Error;
             VideoView.Prepared += video_Prepared;
+            layout.AddView( VideoView );
 
-            var mediaController = new MediaController( this );
+            //
+            // Initialize the loading spinner.
+            //
+            LoadingSpinnerView = new Widgets.LoadingSpinner( Activity, null )
+            {
+                LayoutParameters = new FrameLayout.LayoutParams( ( int ) ( 80 * Resources.DisplayMetrics.Density ), ( int ) ( 80 * Resources.DisplayMetrics.Density ) )
+                {
+                    Gravity = GravityFlags.Center
+                }
+            };
+            layout.AddView( LoadingSpinnerView );
+
+            var mediaController = new MediaController( Activity );
             mediaController.SetAnchorView( VideoView );
             VideoView.SetMediaController( mediaController );
         }
 
         /// <summary>
-        /// Called after <c><see cref="M:Android.App.Activity.OnRestoreInstanceState(Android.OS.Bundle)" /></c>, <c><see cref="M:Android.App.Activity.OnRestart" /></c>, or
-        /// <c><see cref="M:Android.App.Activity.OnPause" /></c>, for your activity to start interacting with the user.
+        /// Called when the fragment is visible to the user and actively running.
         /// </summary>
-        protected override void OnResume()
+        public override void OnResume()
         {
             base.OnResume();
 
-            var url = Intent.GetStringExtra( "data" ).FromJson<string>();
+            var url = Data.FromJson<string>();
 
             if ( LastUrl == url && LastPosition.HasValue )
             {
@@ -88,7 +120,7 @@ namespace Crex.Android.Activities
             }
             else
             {
-                PlayVideo( url, 0 );
+                PlayVideo( url, null );
             }
         }
 
@@ -96,7 +128,7 @@ namespace Crex.Android.Activities
         /// Called as part of the activity lifecycle when an activity is going into
         /// the background, but has not (yet) been killed.
         /// </summary>
-        protected override void OnPause()
+        public override void OnPause()
         {
             base.OnPause();
 
@@ -104,7 +136,7 @@ namespace Crex.Android.Activities
 
             try
             {
-                LastUrl = Intent.GetStringExtra( "data" ).FromJson<string>();
+                LastUrl = Data.FromJson<string>();
                 LastPosition = VideoView.CurrentPosition;
                 var duration = VideoView.Duration;
 
@@ -133,15 +165,15 @@ namespace Crex.Android.Activities
         /// </summary>
         private void ShowResumeDialog()
         {
-            var builder = new AlertDialog.Builder( this, global::Android.Resource.Style.ThemeDeviceDefaultDialogAlert );
+            var builder = new AlertDialog.Builder( Activity, global::Android.Resource.Style.ThemeDeviceDefaultDialogAlert );
 
             builder.SetTitle( "Resume Playback" )
                 .SetMessage( "Do you wish to resume playback where you left off?" )
                 .SetPositiveButton( "Resume", new Dialogs.OnClickAction( ResumePlayback ) )
                 .SetNegativeButton( "Start Over", new Dialogs.OnClickAction( StartPlaybackOver ) )
-                .SetOnCancelListener( new Dialogs.OnCancelAction( Finish ) );
+                .SetOnCancelListener( new Dialogs.OnCancelAction( CrexActivity.MainActivity.PopTopFragment ) );
 
-            RunOnUiThread( () =>
+            Activity.RunOnUiThread( () =>
             {
                 builder.Show();
             } );
@@ -152,7 +184,7 @@ namespace Crex.Android.Activities
         /// </summary>
         private void ResumePlayback()
         {
-            var url = Intent.GetStringExtra( "data" ).FromJson<string>();
+            var url = Data.FromJson<string>();
 
             PlayVideo( url, LastPosition.Value );
         }
@@ -162,7 +194,7 @@ namespace Crex.Android.Activities
         /// </summary>
         private void StartPlaybackOver()
         {
-            var url = Intent.GetStringExtra( "data" ).FromJson<string>();
+            var url = Data.FromJson<string>();
 
             PlayVideo( url, 0 );
         }
@@ -172,13 +204,15 @@ namespace Crex.Android.Activities
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <param name="position">The position.</param>
-        private void PlayVideo( string url, int position )
+        private void PlayVideo( string url, int? position )
         {
-            LoadingSpinnerView.Start();
+            if ( position.HasValue )
+            {
+                PlaybackAtPosition = position;
+            }
 
-            PlaybackAtPosition = position;
+            LoadingSpinnerView.Start();
             VideoView.SetVideoURI( global::Android.Net.Uri.Parse( url ) );
-            VideoView.RequestFocus();
         }
 
         #endregion
@@ -192,7 +226,7 @@ namespace Crex.Android.Activities
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void video_Completion( object sender, EventArgs e )
         {
-            Finish();
+            CrexActivity.MainActivity.PopTopFragment();
         }
 
         /// <summary>
@@ -202,14 +236,14 @@ namespace Crex.Android.Activities
         /// <param name="e">The <see cref="Android.Media.MediaPlayer.ErrorEventArgs"/> instance containing the event data.</param>
         private void video_Error( object sender, MediaPlayer.ErrorEventArgs e )
         {
-            var builder = new AlertDialog.Builder( this, global::Android.Resource.Style.ThemeDeviceDefaultDialogAlert );
+            var builder = new AlertDialog.Builder( Activity, global::Android.Resource.Style.ThemeDeviceDefaultDialogAlert );
 
             builder.SetTitle( "Video Playback Error" )
                 .SetMessage( "An error occurred trying to play the video." )
-                .SetPositiveButton( "Close", new Dialogs.OnClickAction( Finish ) )
-                .SetOnCancelListener( new Dialogs.OnCancelAction( Finish ) );
+                .SetPositiveButton( "Close", new Dialogs.OnClickAction( CrexActivity.MainActivity.PopTopFragment ) )
+                .SetOnCancelListener( new Dialogs.OnCancelAction( CrexActivity.MainActivity.PopTopFragment ) );
 
-            RunOnUiThread( () =>
+            Activity.RunOnUiThread( () =>
             {
                 builder.Show();
             } );
@@ -234,6 +268,7 @@ namespace Crex.Android.Activities
                 }
 
                 VideoView.Start();
+                VideoView.RequestFocus();
             } );
         }
 
