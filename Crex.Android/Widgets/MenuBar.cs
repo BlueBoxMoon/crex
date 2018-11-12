@@ -58,10 +58,20 @@ namespace Crex.Android.Widgets
 
         #region Base Method Overrides
 
+        /// <summary>
+        /// This is called during layout when the size of this view has changed.
+        /// </summary>
+        /// <param name="w">Current width of this view.</param>
+        /// <param name="h">Current height of this view.</param>
+        /// <param name="oldw">Old width of this view.</param>
+        /// <param name="oldh">Old height of this view.</param>
         protected override void OnSizeChanged( int w, int h, int oldw, int oldh )
         {
             base.OnSizeChanged( w, h, oldw, oldh );
 
+            //
+            // Adjust the size of all the menu buttons.
+            //
             for ( int i = 0; i < ChildCount; i++ )
             {
                 if ( GetChildAt( i ) is MenuButton button )
