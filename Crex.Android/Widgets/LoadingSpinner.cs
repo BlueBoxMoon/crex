@@ -140,6 +140,10 @@ namespace Crex.Android.Widgets
                     var animationSet = ( AnimationSet ) imageView.Animation;
                     animationSet.AddAnimation( fadeAnimation );
                 }
+                else
+                {
+                    Stopped();
+                }
             }
         }
 
@@ -148,7 +152,7 @@ namespace Crex.Android.Widgets
         /// </summary>
         private void Stopped()
         {
-            ClearAnimation();
+            imageView.ClearAnimation();
 
             foreach ( Action a in _stopActions )
             {
@@ -196,27 +200,28 @@ namespace Crex.Android.Widgets
                     autoShowTimer.Dispose();
                     autoShowTimer = null;
 
-                    if ( !IsRunning )
-                    {
-                        return;
-                    }
-
                     imageView.Post( () =>
                     {
-                        //
-                        // Start an animation for rotating the spinner forever.
-                        //
-                        var anim = new RotateAnimation( 0, 360f, Dimension.RelativeToSelf, 0.5f, Dimension.RelativeToSelf, 0.5f )
+                        lock ( this )
                         {
-                            Duration = 1500,
-                            RepeatCount = Animation.Infinite,
-                            Interpolator = new LinearInterpolator()
-                        };
-                        var animationSet = new AnimationSet( false );
-                        animationSet.AddAnimation( anim );
+                            if ( IsRunning && imageView.Animation == null )
+                            {
+                                //
+                                // Start an animation for rotating the spinner forever.
+                                //
+                                var anim = new RotateAnimation( 0, 360f, Dimension.RelativeToSelf, 0.5f, Dimension.RelativeToSelf, 0.5f )
+                                {
+                                    Duration = 1500,
+                                    RepeatCount = Animation.Infinite,
+                                    Interpolator = new LinearInterpolator()
+                                };
+                                var animationSet = new AnimationSet( false );
+                                animationSet.AddAnimation( anim );
 
-                        imageView.StartAnimation( animationSet );
-                        imageView.Visibility = ViewStates.Visible;
+                                imageView.StartAnimation( animationSet );
+                                imageView.Visibility = ViewStates.Visible;
+                            }
+                        }
                     } );
                 }
             }
