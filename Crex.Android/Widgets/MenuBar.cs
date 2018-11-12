@@ -20,10 +20,15 @@ namespace Crex.Android.Widgets
 
         #endregion
 
-        #region Fields
+        #region Properties
 
-        Color unfocusedColor;
-        Color focusedColor;
+        /// <summary>
+        /// Gets the last focused button.
+        /// </summary>
+        /// <value>
+        /// The last focused button.
+        /// </value>
+        protected int LastFocusedButton { get; private set; }
 
         #endregion
 
@@ -47,13 +52,45 @@ namespace Crex.Android.Widgets
             //
             SetHorizontalGravity( GravityFlags.Center );
             SetVerticalGravity( GravityFlags.Center );
+        }
 
-            //
-            // Save a reference to the actual color objects so we don't have to keep
-            // creating new color objects each time the selection changes.
-            //
-            unfocusedColor = Color.ParseColor( Crex.Application.Current.Config.Buttons.UnfocusedTextColor );
-            focusedColor = Color.ParseColor( Crex.Application.Current.Config.Buttons.FocusedTextColor );
+        #endregion
+
+        #region Base Method Overrides
+
+        protected override void OnSizeChanged( int w, int h, int oldw, int oldh )
+        {
+            base.OnSizeChanged( w, h, oldw, oldh );
+
+            for ( int i = 0; i < ChildCount; i++ )
+            {
+                if ( GetChildAt( i ) is MenuButton button )
+                {
+                    button.LayoutParameters = new LayoutParams( ViewGroup.LayoutParams.WrapContent, h / 2 );
+                }
+            }
+
+            Measure( MeasureSpec.MakeMeasureSpec( MeasuredWidth, MeasureSpecMode.Exactly ), MeasureSpec.MakeMeasureSpec( MeasuredHeight, MeasureSpecMode.Exactly ) );
+        }
+
+        /// <summary>
+        /// Look for a descendant to call <c><see cref="M:Android.Views.View.RequestFocus" /></c> on.
+        /// </summary>
+        /// <param name="direction">One of FOCUS_UP, FOCUS_DOWN, FOCUS_LEFT, and FOCUS_RIGHT</param>
+        /// <param name="previouslyFocusedRect">The rectangle (in this View's coordinate system)
+        /// to give a finer grained hint about where focus is coming from.  May be null
+        /// if there is no hint.</param>
+        /// <returns>true to indicate the event has been handled.</returns>
+        protected override bool OnRequestFocusInDescendants( int direction, Rect previouslyFocusedRect )
+        {
+            if ( LastFocusedButton < ChildCount )
+            {
+                GetChildAt( LastFocusedButton ).RequestFocus();
+
+                return true;
+            }
+
+            return base.OnRequestFocusInDescendants( direction, previouslyFocusedRect );
         }
 
         #endregion
@@ -70,44 +107,27 @@ namespace Crex.Android.Widgets
 
             for ( int i = 0; i < buttonTitles.Count; i++ )
             {
-                var button = new Button( Context )
+                var button = new MenuButton( Context )
                 {
                     Text = buttonTitles[i],
-                    Tag = i
+                    Tag = i,
+                    LayoutParameters = new LayoutParams( ViewGroup.LayoutParams.WrapContent, Height / 2 )
                 };
 
-                button.SetBackgroundColor( Color.Transparent );
-                button.SetTextColor( unfocusedColor );
-                button.SetTextSize( ComplexUnitType.Dip, 17 );
-                button.SetPadding( 20, 0, 20, 0 );
-                button.FocusChange += Button_FocusChange;
                 button.Click += (sender, e) =>
                 {
                     ButtonClicked?.Invoke( this, new ButtonClickEventArgs( ( int ) ( ( Button ) sender ).Tag ) );
                 };
 
+                button.FocusChange += ( sender, e ) =>
+                {
+                    if ( e.HasFocus )
+                    {
+                        LastFocusedButton = ( int ) ( ( Button ) sender ).Tag;
+                    }
+                };
+
                 AddView( button );
-            }
-        }
-
-        #endregion
-
-        #region Events
-
-        /// <summary>
-        /// Handles the FocusChange event of the button control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="FocusChangeEventArgs"/> instance containing the event data.</param>
-        private void Button_FocusChange( object sender, FocusChangeEventArgs e )
-        {
-            if ( e.HasFocus )
-            {
-                ( ( Button ) sender ).SetTextColor( focusedColor );
-            }
-            else
-            {
-                ( ( Button ) sender ).SetTextColor( unfocusedColor );
             }
         }
 
