@@ -246,7 +246,7 @@ namespace Crex.Android.Templates
             //
             BackgroundImage = await Utility.LoadImageFromUrlAsync( PosterData.BackgroundImage.BestMatch );
             BackgroundImage = Utility.ScaleImageToWidth( BackgroundImage, ( int ) ( Crex.Application.Current.Resolution.Width / 2.0f ) );
-            BackgroundImage = Utility.CreateBlurredImage( BackgroundImage, 4 );
+            BackgroundImage = Utility.CreateBlurredImage( BackgroundImage, 8 );
 
             if ( Activity != null )
             {

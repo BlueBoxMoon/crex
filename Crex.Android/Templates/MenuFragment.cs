@@ -160,18 +160,12 @@ namespace Crex.Android.Templates
         }
 
         /// <summary>
-        /// Called when the fragment has been fully hidden.
+        /// Called when the fragment is visible to the user and actively running.
         /// </summary>
-        public override void OnFragmentDidHide()
+        public override void OnResume()
         {
-            NotificationView.ShowNotification( null );
-        }
+            base.OnResume();
 
-        /// <summary>
-        /// Called when the fragment has fully appeared on screen.
-        /// </summary>
-        public override void OnFragmentDidShow()
-        {
             ShowNextNotification();
         }
 
