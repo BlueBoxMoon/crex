@@ -236,6 +236,8 @@ namespace Crex.Android.Templates
         /// <param name="e">The <see cref="Android.Media.MediaPlayer.ErrorEventArgs"/> instance containing the event data.</param>
         private void video_Error( object sender, MediaPlayer.ErrorEventArgs e )
         {
+            VideoView.StopPlayback();
+
             var builder = new AlertDialog.Builder( Activity, global::Android.Resource.Style.ThemeDeviceDefaultDialogAlert );
 
             builder.SetTitle( "Video Playback Error" )
