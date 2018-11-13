@@ -155,7 +155,7 @@ namespace Crex.tvOS
                 BytesPerRow = ( int ) effectOutContext.BytesPerRow
             };
 
-            var inputRadius = blurRadius * UIScreen.MainScreen.Scale;
+            var inputRadius = blurRadius * UIScreen.MainScreen.Scale / 2.0f;
             uint radius = ( uint ) ( Math.Floor( inputRadius * 3 * Math.Sqrt( 2 * Math.PI ) / 4 + 0.5 ) );
             if ( ( radius % 2 ) != 1 )
                 radius += 1;
