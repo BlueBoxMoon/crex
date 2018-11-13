@@ -120,5 +120,15 @@ namespace Crex.Android
 
             return Bitmap.CreateScaledBitmap( originalBitmap, width, ( int ) ( originalBitmap.Height / ratio ), true );
         }
+
+        /// <summary>
+        /// Converts a DIP/DP value to a pixel value.
+        /// </summary>
+        /// <param name="dip">The dip value.</param>
+        /// <returns>The same value in pixels.</returns>
+        public static int DipToPixel( int dip )
+        {
+            return ( int ) ( dip * global::Android.App.Application.Context.Resources.DisplayMetrics.Density );
+        }
     }
 }
