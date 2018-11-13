@@ -144,7 +144,6 @@ namespace Crex.Android.Templates
                     TopMargin = DipToPixel( 325 ),
                     LeftMargin = DipToPixel( 40 )
                 },
-                Text = "Detail Left",
                 TextAlignment = TextAlignment.ViewStart,
                 TextSize = 14
             };
@@ -160,7 +159,6 @@ namespace Crex.Android.Templates
                     TopMargin = DipToPixel( 325 ),
                     LeftMargin = DipToPixel( 240 )
                 },
-                Text = "Detail Right",
                 TextAlignment = TextAlignment.ViewEnd,
                 TextSize = 14
             };
@@ -176,7 +174,6 @@ namespace Crex.Android.Templates
                     TopMargin = DipToPixel( 355 ),
                     LeftMargin = DipToPixel( 40 )
                 },
-                Text = "Description",
                 TextSize = 14,
                 Ellipsize = global::Android.Text.TextUtils.TruncateAt.End
             };
