@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Android.Content;
 using Android.Graphics;
+using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
@@ -52,6 +53,8 @@ namespace Crex.Android.Widgets
             //
             SetHorizontalGravity( GravityFlags.Center );
             SetVerticalGravity( GravityFlags.Center );
+
+            Focusable = true;
         }
 
         #endregion
@@ -84,14 +87,15 @@ namespace Crex.Android.Widgets
         }
 
         /// <summary>
-        /// Look for a descendant to call <c><see cref="M:Android.Views.View.RequestFocus" /></c> on.
+        /// Call this to try to give focus to a specific view or to one of its descendants
+        /// and give it hints about the direction and a specific rectangle that the focus
+        /// is coming from.
         /// </summary>
         /// <param name="direction">One of FOCUS_UP, FOCUS_DOWN, FOCUS_LEFT, and FOCUS_RIGHT</param>
         /// <param name="previouslyFocusedRect">The rectangle (in this View's coordinate system)
         /// to give a finer grained hint about where focus is coming from.  May be null
         /// if there is no hint.</param>
-        /// <returns>true to indicate the event has been handled.</returns>
-        protected override bool OnRequestFocusInDescendants( int direction, Rect previouslyFocusedRect )
+        public override bool RequestFocus( [GeneratedEnum] FocusSearchDirection direction, Rect previouslyFocusedRect )
         {
             if ( LastFocusedButton < ChildCount )
             {
@@ -100,7 +104,7 @@ namespace Crex.Android.Widgets
                 return true;
             }
 
-            return base.OnRequestFocusInDescendants( direction, previouslyFocusedRect );
+            return base.RequestFocus( direction, previouslyFocusedRect );
         }
 
         #endregion
