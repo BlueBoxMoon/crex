@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
+using Android.Animation;
 using Android.App;
 using Android.OS;
+using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 
@@ -39,6 +41,32 @@ namespace Crex.Android
             return layout;
         }
 
+        /// <summary>
+        /// Called when a fragment loads an animation.
+        /// </summary>
+        /// <param name="transit">To be added.</param>
+        /// <param name="enter">To be added.</param>
+        /// <param name="nextAnim">To be added.</param>
+        /// <returns>The Animator object to be used for the transition.</returns>
+        public override Animator OnCreateAnimator( [GeneratedEnum] FragmentTransit transit, bool enter, int nextAnim )
+        {
+            var animator = AnimatorInflater.LoadAnimator( Activity, nextAnim );
+
+            if ( animator != null )
+            {
+                animator.AnimationStart += ( sender, args ) =>
+                {
+                    ( ( Activities.CrexActivity ) Activity ).FragmentAnimationStarted( enter );
+                };
+                animator.AnimationEnd += ( sender, args ) =>
+                {
+                    ( ( Activities.CrexActivity ) Activity ).FragmentAnimationEnded( enter );
+                };
+            }
+
+            return animator;
+        }
+
         #endregion
 
         #region Methods
@@ -63,6 +91,26 @@ namespace Crex.Android
         {
             return ( int ) ( dip * Activity.Resources.DisplayMetrics.Density );
         }
+
+        /// <summary>
+        /// Called when the fragment is about to appear on screen.
+        /// </summary>
+        public virtual void OnFragmentWillShow() { }
+
+        /// <summary>
+        /// Called when the fragment has fully appeared on screen.
+        /// </summary>
+        public virtual void OnFragmentDidShow() { }
+
+        /// <summary>
+        /// Called when the fragment is about to be hidden.
+        /// </summary>
+        public virtual void OnFragmentWillHide() { }
+
+        /// <summary>
+        /// Called when the fragment has been fully hidden.
+        /// </summary>
+        public virtual void OnFragmentDidHide() { }
 
         #endregion
     }

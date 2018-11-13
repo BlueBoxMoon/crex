@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Android.App;
 using Android.Graphics;
 using Android.OS;
-using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Crex.Extensions;
@@ -30,6 +29,14 @@ namespace Crex.Android.Templates
         /// The menu bar view.
         /// </value>
         protected Widgets.MenuBar MenuBarView { get; private set; }
+
+        /// <summary>
+        /// Gets the notification view.
+        /// </summary>
+        /// <value>
+        /// The notification view.
+        /// </value>
+        protected Widgets.NotificationView NotificationView { get; private set; }
 
         #endregion
 
@@ -75,6 +82,7 @@ namespace Crex.Android.Templates
             base.OnViewCreated( view, savedInstanceState );
 
             var layout = ( FrameLayout ) view;
+            Crex.Application.Current.Preferences.RemoveValue( "Crex.LastSeenNotification" );
 
             //
             // Setup the background image view.
@@ -89,16 +97,28 @@ namespace Crex.Android.Templates
             //
             // Setup the Menu Bar
             //
-            int height = ( int ) TypedValue.ApplyDimension( ComplexUnitType.Dip, 60, Resources.DisplayMetrics );
             MenuBarView = new Widgets.MenuBar( Activity, null )
             {
-                LayoutParameters = new FrameLayout.LayoutParams( ViewGroup.LayoutParams.MatchParent, height )
+                LayoutParameters = new FrameLayout.LayoutParams( ViewGroup.LayoutParams.MatchParent, Utility.DipToPixel( 60 ) )
                 {
                     Gravity = GravityFlags.Bottom
                 }
             };
             MenuBarView.ButtonClicked += MenuBar_ButtonClicked;
             layout.AddView( MenuBarView );
+
+            NotificationView = new Widgets.NotificationView( Activity )
+            {
+                LayoutParameters = new FrameLayout.LayoutParams( ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent )
+                {
+                    Gravity = GravityFlags.Top
+                }
+            };
+            NotificationView.NotificationWasDismissed += ( sender, arg ) =>
+            {
+                ShowNextNotification();
+            };
+            layout.AddView( NotificationView );
 
             //
             // Set our initial data if we have already loaded.
@@ -139,6 +159,22 @@ namespace Crex.Android.Templates
             LastLoadedDate = DateTime.Now;
         }
 
+        /// <summary>
+        /// Called when the fragment has been fully hidden.
+        /// </summary>
+        public override void OnFragmentDidHide()
+        {
+            NotificationView.ShowNotification( null );
+        }
+
+        /// <summary>
+        /// Called when the fragment has fully appeared on screen.
+        /// </summary>
+        public override void OnFragmentDidShow()
+        {
+            ShowNextNotification();
+        }
+
         #endregion
 
         #region Methods
@@ -152,6 +188,19 @@ namespace Crex.Android.Templates
 
             MenuBarView.SetButtons( MenuData.Buttons.Select( b => b.Title ).ToList() );
             MenuBarView.RequestFocus();
+        }
+
+        /// <summary>
+        /// Shows the next notification.
+        /// </summary>
+        protected void ShowNextNotification()
+        {
+            var notification = MenuData.Notifications.GetNextNotification();
+
+            if ( notification != null )
+            {
+                NotificationView.ShowNotification( notification );
+            }
         }
 
         #endregion

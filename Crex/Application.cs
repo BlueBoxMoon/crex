@@ -42,9 +42,29 @@ namespace Crex
 
         #region Properties
 
+        /// <summary>
+        /// Gets the configuration.
+        /// </summary>
+        /// <value>
+        /// The configuration.
+        /// </value>
         public Config Config { get; private set; }
 
+        /// <summary>
+        /// Gets the resolution.
+        /// </summary>
+        /// <value>
+        /// The resolution.
+        /// </value>
         public Resolution Resolution { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the preference manager.
+        /// </summary>
+        /// <value>
+        /// The preference manager.
+        /// </value>
+        public PreferenceManager Preferences { get; protected set; }
 
         /// <summary>
         /// Gets the crex version.

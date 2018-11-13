@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AndroidPreferences.cs" />
     <Compile Include="Application.cs" />
     <Compile Include="CrexBaseActivity.cs" />
     <Compile Include="Dialogs\OnCancelAction.cs" />
@@ -71,6 +72,7 @@
     <Compile Include="Activities\CrexActivity.cs" />
     <Compile Include="CrexBaseFragment.cs" />
     <Compile Include="Widgets\MenuButton.cs" />
+    <Compile Include="Widgets\NotificationView.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">

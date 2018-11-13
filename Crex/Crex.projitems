@@ -11,8 +11,10 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Application.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Config.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ListExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ObjectExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PreferenceManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\CrexAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\Menu.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\MenuButton.cs" />

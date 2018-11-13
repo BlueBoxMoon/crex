@@ -53,6 +53,14 @@ namespace Crex.Android.Activities
         /// </value>
         protected CancellationTokenSource LoadingCancellationTokenSource { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether we are currently transitioning fragments.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if we are currently transitioning fragments; otherwise, <c>false</c>.
+        /// </value>
+        protected bool InFragmentTransition { get; private set; }
+
         #endregion
 
         #region Base Method Overrides
@@ -114,6 +122,14 @@ namespace Crex.Android.Activities
         /// <param name="e">The key event.</param>
         public override bool DispatchKeyEvent( KeyEvent e )
         {
+            //
+            // If we are in the middle of a transition, ignore all keys.
+            //
+            if ( InFragmentTransition == true )
+            {
+                return true;
+            }
+
             //
             // If we are currently loading a new action then disable everything
             // except the Back button.
@@ -273,12 +289,14 @@ namespace Crex.Android.Activities
         /// <param name="fragment">The fragment.</param>
         public void PushFragment(CrexBaseFragment fragment)
         {
+            var oldFragment = Fragments.LastOrDefault();
             var tx = FragmentManager.BeginTransaction();
 
             tx.SetCustomAnimations( global::Android.Resource.Animator.FadeIn, global::Android.Resource.Animator.FadeOut, global::Android.Resource.Animator.FadeIn, global::Android.Resource.Animator.FadeOut );
             tx.Add( global::Android.Resource.Id.Content, fragment );
             Fragments.Add( fragment );
 
+            InFragmentTransition = true;
             tx.Commit();
         }
 
@@ -287,18 +305,69 @@ namespace Crex.Android.Activities
         /// </summary>
         public void PopTopFragment()
         {
-            if ( Fragments.Count > 0 )
+            if ( Fragments.Count > 1 )
             {
+                var oldFragment = Fragments.Last();
                 var tx = FragmentManager.BeginTransaction();
 
                 tx.SetCustomAnimations( global::Android.Resource.Animator.FadeIn, global::Android.Resource.Animator.FadeOut, global::Android.Resource.Animator.FadeIn, global::Android.Resource.Animator.FadeOut );
-                tx.Remove( Fragments.Last() );
-                Fragments.Remove( Fragments.Last() );
+                tx.Remove( oldFragment );
 
+                InFragmentTransition = true;
                 tx.Commit();
-
-                Fragments.Last().View.RequestFocus();
             }
+        }
+
+        /// <summary>
+        /// A fragment transition animation has started.
+        /// </summary>
+        /// <param name="enter">if set to <c>true</c> a new fragment is entering.</param>
+        public void FragmentAnimationStarted( bool enter )
+        {
+            if ( enter )
+            {
+                var oldFragment = Fragments.Count > 1 ? Fragments[Fragments.Count - 2] : null;
+                var newFragment = Fragments.Last();
+
+                oldFragment?.OnFragmentWillHide();
+                newFragment.OnFragmentWillShow();
+            }
+            else
+            {
+                var newFragment = Fragments.Count > 1 ? Fragments[Fragments.Count - 2] : null;
+                var oldFragment = Fragments.Last();
+
+                oldFragment.OnFragmentWillHide();
+                newFragment?.OnFragmentWillShow();
+            }
+        }
+
+        /// <summary>
+        /// A fragment transition animation has ended.
+        /// </summary>
+        /// <param name="enter">if set to <c>true</c> a new fragment has entered.</param>
+        public void FragmentAnimationEnded( bool enter )
+        {
+            if ( enter )
+            {
+                var oldFragment = Fragments.Count > 1 ? Fragments[Fragments.Count - 2] : null;
+                var newFragment = Fragments.Last();
+
+                oldFragment?.OnFragmentDidHide();
+                newFragment.OnFragmentDidShow();
+            }
+            else
+            {
+                var newFragment = Fragments.Count > 1 ? Fragments[Fragments.Count - 2] : null;
+                var oldFragment = Fragments.Last();
+
+                oldFragment.OnFragmentDidHide();
+                newFragment?.OnFragmentDidShow();
+
+                Fragments.Remove( Fragments.Last() );
+            }
+
+            InFragmentTransition = false;
         }
 
         /// <summary>

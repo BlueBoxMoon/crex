@@ -15,6 +15,7 @@ namespace Crex.Android
         public Application()
             : base( global::Android.App.Application.Context.Assets.Open( "config.json" ), new Resolution( global::Android.App.Application.Context.Resources.DisplayMetrics.WidthPixels, global::Android.App.Application.Context.Resources.DisplayMetrics.HeightPixels ) )
         {
+            Preferences = new AndroidPreferences( global::Android.App.Application.Context );
         }
 
         /// <summary>
