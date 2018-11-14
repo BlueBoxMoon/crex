@@ -43,7 +43,7 @@ namespace Crex.Android
         {
             Console.WriteLine( $"Navigation to { url }" );
 
-            await CrexActivity.MainActivity.StartAction( sender, url );
+            await CrexActivity.MainActivity.StartAction( url );
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Crex.Android
         /// <param name="action">The action that should be loaded.</param>
         public override async Task StartAction( object sender, Rest.CrexAction action )
         {
-            await CrexActivity.MainActivity.StartAction( sender, action );
+            await CrexActivity.MainActivity.StartAction( action );
         }
     }
 }

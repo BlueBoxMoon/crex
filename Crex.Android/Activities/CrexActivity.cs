@@ -163,13 +163,13 @@ namespace Crex.Android.Activities
         /// </summary>
         /// <param name="sender">The UIViewController that is starting this action.</param>
         /// <param name="url">The url to the action to be started.</param>
-        public async Task StartAction( object sender, string url )
+        public async Task StartAction( string url )
         {
             LoadingCancellationTokenSource = new CancellationTokenSource();
 
             try
             {
-                await StartAction( sender, url, LoadingCancellationTokenSource.Token );
+                await StartAction( url, LoadingCancellationTokenSource.Token );
             }
             catch ( Exception e )
             {
@@ -182,7 +182,7 @@ namespace Crex.Android.Activities
         /// </summary>
         /// <param name="sender">The UIViewController that is starting this action.</param>
         /// <param name="url">The url to the action to be started.</param>
-        private async Task StartAction( object sender, string url, CancellationToken cancellationToken )
+        private async Task StartAction( string url, CancellationToken cancellationToken )
         {
             ShowLoading();
 
@@ -194,7 +194,7 @@ namespace Crex.Android.Activities
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await StartAction( sender, action, cancellationToken );
+            await StartAction( action, cancellationToken );
         }
 
         /// <summary>
@@ -202,13 +202,13 @@ namespace Crex.Android.Activities
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="action">The action that should be loaded.</param>
-        public async Task StartAction( object sender, Rest.CrexAction action )
+        public async Task StartAction( Rest.CrexAction action )
         {
             LoadingCancellationTokenSource = new CancellationTokenSource();
 
             try
             {
-                await StartAction( sender, action, LoadingCancellationTokenSource.Token );
+                await StartAction( action, LoadingCancellationTokenSource.Token );
             }
             catch (Exception e)
             {
@@ -221,19 +221,8 @@ namespace Crex.Android.Activities
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="action">The action that should be loaded.</param>
-        private async Task StartAction( object sender, Rest.CrexAction action, CancellationToken cancellationToken )
+        private async Task StartAction( Rest.CrexAction action, CancellationToken cancellationToken )
         { 
-            Activity currentActivity = null;
-
-            if ( sender is Activity )
-            {
-                currentActivity = ( Activity ) sender;
-            }
-            else if ( sender is Fragment )
-            {
-                currentActivity = ( ( Fragment ) sender ).Activity;
-            }
-
             //
             // Check if we were able to load the data.
             //
