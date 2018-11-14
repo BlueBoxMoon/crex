@@ -79,6 +79,7 @@
     <Compile Include="Templates\VideoViewController.cs" />
     <Compile Include="ViewControllers\NavigationController.cs" />
     <Compile Include="Views\FocusView.cs" />
+    <Compile Include="ApplePreferences.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\crex-default-spinner.png" />
