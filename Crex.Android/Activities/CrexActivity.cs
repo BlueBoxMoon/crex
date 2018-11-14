@@ -338,7 +338,12 @@ namespace Crex.Android.Activities
                 var oldFragment = Fragments.Last();
 
                 oldFragment.OnFragmentWillHide();
-                newFragment?.OnFragmentWillShow();
+
+                if ( newFragment != null )
+                {
+                    newFragment.OnFragmentWillShow();
+                    newFragment.View.Visibility = ViewStates.Visible;
+                }
             }
         }
 
@@ -353,7 +358,12 @@ namespace Crex.Android.Activities
                 var oldFragment = Fragments.Count > 1 ? Fragments[Fragments.Count - 2] : null;
                 var newFragment = Fragments.Last();
 
-                oldFragment?.OnFragmentDidHide();
+                if ( oldFragment != null )
+                {
+                    oldFragment.OnFragmentDidHide();
+                    oldFragment.View.Visibility = ViewStates.Invisible;
+                }
+
                 newFragment.OnFragmentDidShow();
             }
             else
