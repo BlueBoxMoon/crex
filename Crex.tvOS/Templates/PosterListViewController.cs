@@ -101,7 +101,8 @@ namespace Crex.tvOS.Templates
             ListView = new UITableView( new CGRect( 1040, 200, 800, 680 ), UITableViewStyle.Plain )
             {
                 DataSource = this,
-                Delegate = this
+                Delegate = this,
+                RemembersLastFocusedIndexPath = true
             };
             View.AddSubview( ListView );
 
@@ -180,7 +181,7 @@ namespace Crex.tvOS.Templates
                 InvokeOnMainThread( () =>
                 {
                     image = Utility.ScaleImageToWidth( image, ( int ) ( View.Bounds.Width / 2.0f ) );
-                    image = Utility.CreateBlurredImage( image, 4 );
+                    image = Utility.CreateBlurredImage( image, 8 );
 
                     //
                     // Update the UI with the image and buttons.
