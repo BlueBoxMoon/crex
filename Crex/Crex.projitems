@@ -23,4 +23,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Rest\UrlSet.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\Notification.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Resources\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\crex-default-spinner.png" />
+  </ItemGroup>
 </Project>

@@ -89,9 +89,6 @@
     <AndroidResource Include="Resources\values\defaults.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\crex-default-spinner.png" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidResource Include="Resources\layout\PosterListViewItem.axml">
       <Generator>MSBuild:UpdateGeneratedFiles</Generator>
       <SubType>Designer</SubType>

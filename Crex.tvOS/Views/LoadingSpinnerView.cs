@@ -133,6 +133,10 @@ namespace Crex.tvOS.Views
                         } );
                     } );
                 }
+                else
+                {
+                    Stopped();
+                }
             }
         }
 

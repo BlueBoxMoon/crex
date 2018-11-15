@@ -78,7 +78,7 @@ namespace Crex.tvOS.ViewControllers
         /// <param name="evt">Evt.</param>
         public override void PressesBegan( NSSet<UIPress> presses, UIPressesEvent evt )
         {
-            if ( LoadingCancellationTokenSource != null )
+            if ( LoadingCancellationTokenSource != null && ViewControllers.Length > 0 )
             {
                 return;
             }
@@ -96,7 +96,7 @@ namespace Crex.tvOS.ViewControllers
             //
             // Check for menu button while loading.
             //
-            if ( LoadingCancellationTokenSource != null )
+            if ( LoadingCancellationTokenSource != null && ViewControllers.Length > 0 )
             {
                 foreach ( UIPress press in presses )
                 {
@@ -246,7 +246,7 @@ namespace Crex.tvOS.ViewControllers
             cancellationToken.ThrowIfCancellationRequested();
             LoadingCancellationTokenSource = null;
 
-            if (ViewControllers.Length == 0)
+            if ( ViewControllers.Length == 0 )
             {
                 ViewControllers = new[] { newViewController };
             }

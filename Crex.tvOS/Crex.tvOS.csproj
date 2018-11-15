@@ -82,9 +82,6 @@
     <Compile Include="ApplePreferences.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\crex-default-spinner.png" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">
       <Version>11.0.2</Version>
     </PackageReference>
