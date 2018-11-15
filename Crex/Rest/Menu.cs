@@ -25,13 +25,5 @@ namespace Crex.Rest
         /// </summary>
         /// <value>The notifications that should be displayed.</value>
         public List<Notification> Notifications { get; set; }
-
-        /// <summary>
-        /// Gets or sets the required crex version.
-        /// </summary>
-        /// <value>
-        /// The required crex version.
-        /// </value>
-        public int? RequiredCrexVersion { get; set; }
     }
 }

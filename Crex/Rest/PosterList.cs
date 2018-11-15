@@ -27,13 +27,5 @@ namespace Crex.Rest
         /// The items to be displayed.
         /// </value>
         public List<PosterListItem> Items { get; set; }
-
-        /// <summary>
-        /// Gets or sets the required crex version.
-        /// </summary>
-        /// <value>
-        /// The required crex version.
-        /// </value>
-        public int? RequiredCrexVersion { get; set; }
     }
 }
