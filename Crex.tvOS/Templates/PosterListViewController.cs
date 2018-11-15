@@ -13,33 +13,75 @@ namespace Crex.tvOS.Templates
     {
         #region Views
 
+        /// <summary>
+        /// Gets the background image view.
+        /// </summary>
+        /// <value>The background image view.</value>
         protected UIImageView BackgroundImageView { get; private set; }
 
+        /// <summary>
+        /// Gets the title view.
+        /// </summary>
+        /// <value>The title view.</value>
         protected UILabel TitleView { get; private set; }
 
+        /// <summary>
+        /// Gets the poster image view.
+        /// </summary>
+        /// <value>The poster image view.</value>
         protected UIImageView PosterImageView { get; private set; }
 
+        /// <summary>
+        /// Gets the detail left view.
+        /// </summary>
+        /// <value>The detail left view.</value>
         protected UILabel DetailLeftView { get; private set; }
 
+        /// <summary>
+        /// Gets the detail right view.
+        /// </summary>
+        /// <value>The detail right view.</value>
         protected UILabel DetailRightView { get; private set; }
 
+        /// <summary>
+        /// Gets the description view.
+        /// </summary>
+        /// <value>The description view.</value>
         protected Views.TopAlignedLabel DescriptionView { get; private set; }
 
+        /// <summary>
+        /// Gets the list view.
+        /// </summary>
+        /// <value>The list view.</value>
         protected UITableView ListView { get; private set; }
-
-        protected Views.LoadingSpinnerView LoadingSpinnerView { get; set; }
 
         #endregion
 
         #region Properties
 
+        /// <summary>
+        /// Gets the poster data.
+        /// </summary>
+        /// <value>The poster data.</value>
         protected Rest.PosterList PosterData { get; private set; }
 
+        /// <summary>
+        /// Gets the last loaded date.
+        /// </summary>
+        /// <value>The last loaded date.</value>
         protected DateTime LastLoadedDate { get; private set; } = DateTime.MinValue;
 
-        protected UIImage[] ListViewImages { get; private set; }
+        /// <summary>
+        /// Gets the background image.
+        /// </summary>
+        /// <value>The background image.</value>
+        protected UIImage BackgroundImage { get; private set; }
 
-        protected const float BackgroundAlpha = 0.25f;
+        /// <summary>
+        /// Gets the list view images.
+        /// </summary>
+        /// <value>The list view images.</value>
+        protected UIImage[] ListViewImages { get; private set; }
 
         #endregion
 
@@ -52,14 +94,19 @@ namespace Crex.tvOS.Templates
         {
             base.ViewDidLoad();
 
-            View.BackgroundColor = UIColor.FromWhiteAlpha( 0.196f, 1 );
+            //
+            // Initialize the background image view.
+            //
             BackgroundImageView = new UIImageView( new CGRect( 0, 0, 1920, 1080 ) )
             {
-                Alpha = 0,
+                Alpha = 0.25f,
                 ContentMode = UIViewContentMode.ScaleAspectFit
             };
             View.AddSubview( BackgroundImageView );
 
+            //
+            // Initialize the title view.
+            //
             TitleView = new UILabel( new CGRect( 80, 60, 1760, 80 ) )
             {
                 TextAlignment = UITextAlignment.Center,
@@ -68,12 +115,18 @@ namespace Crex.tvOS.Templates
             };
             View.AddSubview( TitleView );
 
+            //
+            // Initialize the poster image view.
+            //
             PosterImageView = new UIImageView( new CGRect( 80, 200, 800, 450 ) )
             {
                 ContentMode = UIViewContentMode.ScaleAspectFit
             };
             View.AddSubview( PosterImageView );
 
+            //
+            // Initialize the left detail view.
+            //
             DetailLeftView = new UILabel( new CGRect( 80, 650, 400, 40 ) )
             {
                 Font = UIFont.SystemFontOfSize( 28 ),
@@ -81,6 +134,9 @@ namespace Crex.tvOS.Templates
            };
             View.AddSubview( DetailLeftView );
 
+            //
+            // Initialize the right detail view.
+            //
             DetailRightView = new UILabel( new CGRect( 480, 650, 400, 40 ) )
             {
                 Font = UIFont.SystemFontOfSize( 28 ),
@@ -89,6 +145,9 @@ namespace Crex.tvOS.Templates
             };
             View.AddSubview( DetailRightView );
 
+            //
+            // Initialize the description view.
+            //
             DescriptionView = new Views.TopAlignedLabel( new CGRect( 80, 710, 800, 280 ) )
             {
                 Lines = 8,
@@ -98,6 +157,9 @@ namespace Crex.tvOS.Templates
             };
             View.AddSubview( DescriptionView );
 
+            //
+            // Initialize the list view.
+            //
             ListView = new UITableView( new CGRect( 1040, 200, 800, 680 ), UITableViewStyle.Plain )
             {
                 DataSource = this,
@@ -105,11 +167,6 @@ namespace Crex.tvOS.Templates
                 RemembersLastFocusedIndexPath = true
             };
             View.AddSubview( ListView );
-
-            LoadingSpinnerView = new Views.LoadingSpinnerView( new CGRect( 880, 460, 160, 160 ) );
-            View.AddSubview( LoadingSpinnerView );
-
-            LoadingSpinnerView.Start();
         }
 
         /// <summary>
@@ -122,91 +179,65 @@ namespace Crex.tvOS.Templates
 
             if ( DateTime.Now.Subtract( LastLoadedDate ).TotalSeconds > Crex.Application.Current.Config.ContentCacheTime.Value )
             {
-                LoadContentInBackground();
+                Task.Run( async () =>
+                {
+                    try
+                    {
+                        await LoadContentAsync();
+                    }
+                    catch
+                    {
+                        LastLoadedDate = DateTime.Now;
+                    }
+                } );
             }
+        }
+
+        /// <summary>
+        /// Loads the content asynchronously.
+        /// </summary>
+        public override async Task LoadContentAsync()
+        {
+            var data = Data.FromJson<Rest.PosterList>();
+
+            //
+            // If the menu content hasn't actually changed, then ignore.
+            //
+            if ( data.ToJson().ComputeHash() == PosterData.ToJson().ComputeHash() )
+            {
+                return;
+            }
+
+            PosterData = data;
+
+            //
+            // Load the background image.
+            //
+            BackgroundImage = await Utility.LoadImageFromUrlAsync( PosterData.BackgroundImage.BestMatch );
+            BackgroundImage = Utility.ScaleImageToWidth( BackgroundImage, ( int ) ( Crex.Application.Current.Resolution.Width / 2.0f ) );
+            BackgroundImage = Utility.CreateBlurredImage( BackgroundImage, 8 );
+
+            ListViewImages = new UIImage[PosterData.Items.Count];
+            LastLoadedDate = DateTime.Now;
+
+            InvokeOnMainThread( () =>
+            {
+                EnsureView();
+                TitleView.Text = PosterData.Title;
+                DetailLeftView.Text = string.Empty;
+                DetailRightView.Text = string.Empty;
+                DescriptionView.Text = string.Empty;
+                BackgroundImageView.Image = BackgroundImage;
+
+                ListView.ReloadData();
+
+                SetNeedsFocusUpdate();
+            } );
         }
 
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Loads the content for the menu.
-        /// </summary>
-        private void LoadContentInBackground()
-        {
-            Task.Run( async () =>
-            {
-                //var url = Data.FromJson<string>();
-                //var json = await new System.Net.Http.HttpClient().GetStringAsync( url );
-                var data = Data.FromJson<Rest.PosterList>();
-
-                //
-                // If the menu content hasn't actually changed, then ignore.
-                //
-                if ( data.ToJson().ComputeHash() == PosterData.ToJson().ComputeHash() )
-                {
-                    return;
-                }
-
-                PosterData = data;
-
-                //
-                // Check if an update is required to show this content.
-                //
-                if ( PosterData.RequiredCrexVersion.HasValue && PosterData.RequiredCrexVersion.Value > Crex.Application.Current.CrexVersion )
-                {
-                    ShowUpdateRequiredDialog();
-
-                    return;
-                }
-
-                //
-                // Load the background image.
-                //
-                var imageTask = Utility.LoadImageFromUrlAsync( PosterData.BackgroundImage.BestMatch );
-                ListViewImages = new UIImage[PosterData.Items.Count];
-
-                InvokeOnMainThread( () =>
-                {
-                    TitleView.Text = PosterData.Title;
-
-                    ListView.ReloadData();
-
-                    SetNeedsFocusUpdate();
-                } );
-
-                var image = await imageTask;
-
-                InvokeOnMainThread( () =>
-                {
-                    image = Utility.ScaleImageToWidth( image, ( int ) ( View.Bounds.Width / 2.0f ) );
-                    image = Utility.CreateBlurredImage( image, 8 );
-
-                    //
-                    // Update the UI with the image and buttons.
-                    //
-                    BackgroundImageView.Image = image;
-
-                    UIView.Animate( Crex.Application.Current.Config.AnimationTime.Value / 1000.0f, () =>
-                    {
-                        BackgroundImageView.Alpha = BackgroundAlpha;
-                    } );
-
-                    LoadingSpinnerView.Stop();
-                } );
-
-                LastLoadedDate = DateTime.Now;
-            } )
-            .ContinueWith( ( t ) =>
-            {
-                if ( t.IsFaulted )
-                {
-                    Console.WriteLine( t.Exception.InnerException.Message );
-                    ShowDataErrorDialog( LoadContentInBackground );
-                }
-            } );
-        }
 
         #endregion
 

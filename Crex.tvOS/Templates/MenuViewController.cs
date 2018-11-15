@@ -159,89 +159,25 @@ namespace Crex.tvOS.Templates
             var image = await Utility.LoadImageFromUrlAsync( MenuData.BackgroundImage.BestMatch );
             var buttons = MenuData.Buttons.Select( b => b.Title ).ToList();
 
+            LastLoadedDate = DateTime.Now;
+
             //
             // Update the UI with the image and buttons.
             //
-            EnsureView();
-            BackgroundImageView.Image = image;
-            MenuBarView.SetButtons( buttons );
-            SetNeedsFocusUpdate();
+            InvokeOnMainThread( () =>
+            {
+                EnsureView();
+                BackgroundImageView.Image = image;
+                MenuBarView.SetButtons( buttons );
+                SetNeedsFocusUpdate();
 
-            ShowNextNotification();
-
-            LastLoadedDate = DateTime.Now;
+                ShowNextNotification();
+            } );
         }
 
         #endregion
 
         #region Methods
-
-
-        /// <summary>
-        /// Loads the content for the menu.
-        /// </summary>
-        private void LoadContentInBackground()
-        {
-            Task.Run( async () =>
-            {
-                //
-                // Load the menu data.
-                //
-                var menu = Data.FromJson<Rest.Menu>();
-
-                //
-                // If the menu content hasn't actually changed, then ignore.
-                //
-                if ( menu.ToJson().ComputeHash() == MenuData.ToJson().ComputeHash() )
-                {
-                    return;
-                }
-                MenuData = menu;
-
-                //
-                // Check if an update is required to show this menu.
-                //
-                if ( MenuData.RequiredCrexVersion.HasValue && MenuData.RequiredCrexVersion.Value > Crex.Application.Current.CrexVersion )
-                {
-                    ShowUpdateRequiredDialog();
-
-                    return;
-                }
-
-                //
-                // Load the image and get the button titles.
-                //
-                var image = await Utility.LoadImageFromUrlAsync( MenuData.BackgroundImage.BestMatch );
-                var buttons = MenuData.Buttons.Select( b => b.Title ).ToList();
-
-                InvokeOnMainThread( () =>
-                {
-                    //
-                    // Update the UI with the image and buttons.
-                    //
-                    BackgroundImageView.Image = image;
-                    MenuBarView.SetButtons( buttons );
-                    SetNeedsFocusUpdate();
-
-                    UIView.Animate( Crex.Application.Current.Config.AnimationTime.Value / 1000.0f, () =>
-                    {
-                        BackgroundImageView.Alpha = 1;
-                        MenuBarView.Alpha = 1;
-                    } );
-
-                    ShowNextNotification();
-                } );
-
-                LastLoadedDate = DateTime.Now;
-            } )
-            .ContinueWith( ( t ) =>
-            {
-                if ( t.IsFaulted )
-                {
-                    ShowDataErrorDialog( LoadContentInBackground );
-                }
-            } );
-        }
 
         /// <summary>
         /// Shows the next notification that needs to be displayed.

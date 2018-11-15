@@ -15,7 +15,7 @@ namespace Crex.tvOS
         {
             View = new UIView()
             {
-                BackgroundColor = new UIColor( 0.07f, 1 )
+                BackgroundColor = new UIColor( 0.196f, 1 )
             };
         }
 

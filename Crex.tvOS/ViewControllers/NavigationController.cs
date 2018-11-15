@@ -232,7 +232,6 @@ namespace Crex.tvOS.ViewControllers
             newViewController.Data = action.Data.ToJson();
             try
             {
-                await Task.Delay( 4000 );
                 await newViewController.LoadContentAsync();
             }
             catch
@@ -261,7 +260,7 @@ namespace Crex.tvOS.ViewControllers
         /// <summary>
         /// Shows the loading overlay.
         /// </summary>
-        public void ShowLoading()
+        protected void ShowLoading()
         {
             OverlayView.Hidden = false;
             OverlayView.FocusEnabled = true;
@@ -273,7 +272,7 @@ namespace Crex.tvOS.ViewControllers
         /// <summary>
         /// Hides the loading overlay.
         /// </summary>
-        public void HideLoading()
+        protected void HideLoading()
         {
             LoadingSpinnerView.Stop( () =>
             {
@@ -289,7 +288,7 @@ namespace Crex.tvOS.ViewControllers
         /// </summary>
         /// <returns>The view controller for template.</returns>
         /// <param name="template">Template.</param>
-        private CrexBaseViewController GetViewControllerForTemplate( string template )
+        protected CrexBaseViewController GetViewControllerForTemplate( string template )
         {
             var type = Type.GetType( $"Crex.tvOS.Templates.{ template }ViewController" );
 

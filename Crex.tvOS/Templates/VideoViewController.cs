@@ -13,7 +13,11 @@ namespace Crex.tvOS.Templates
     {
         #region Views
 
-        protected Views.LoadingSpinnerView LoadingSpinnerView { get; set; }
+        /// <summary>
+        /// Gets the loading spinner view.
+        /// </summary>
+        /// <value>The loading spinner view.</value>
+        protected Views.LoadingSpinnerView LoadingSpinnerView { get; private set; }
 
         #endregion
 
@@ -83,15 +87,12 @@ namespace Crex.tvOS.Templates
             ProcessStateChange();
         }
 
+        /// <summary>
+        /// Loads the content asynchronously.
+        /// </summary>
         public override async Task LoadContentAsync()
         {
             var urlString = Data.FromJson<string>();
-
-            //if ( LastUrl == urlString && LastPosition.HasValue && !PlaybackAtPosition.HasValue )
-            //{
-            //    ShowResumeDialog();
-            //    return;
-            //}
 
             PlayerViewController = new AVPlayerViewController
             {
@@ -122,6 +123,9 @@ namespace Crex.tvOS.Templates
                 await Task.Delay( 100 );
             }
 
+            //
+            // Check for error trying to prepare the video.
+            //
             if ( PlayerViewController.Player.Status != AVPlayerStatus.ReadyToPlay )
             {
                 throw new Exception( "Failed to prepare video" );
