@@ -87,21 +87,6 @@ namespace Crex.tvOS.ViewControllers
         }
 
         /// <summary>
-        /// A button press has changed, ignore it if we are loading.
-        /// </summary>
-        /// <param name="presses">Presses.</param>
-        /// <param name="evt">Evt.</param>
-        public override void PressesChanged( NSSet<UIPress> presses, UIPressesEvent evt )
-        {
-            if ( LoadingCancellationTokenSource != null )
-            {
-                return;
-            }
-
-            base.PressesChanged( presses, evt );
-        }
-
-        /// <summary>
         /// A button press has ended. Check if we need to handle it.
         /// </summary>
         /// <param name="presses">Presses.</param>
@@ -123,11 +108,29 @@ namespace Crex.tvOS.ViewControllers
                     }
                 }
 
-                Console.WriteLine( "Ignored press ended" );
                 return;
             }
 
-            base.PressesBegan( presses, evt );
+            base.PressesEnded( presses, evt );
+        }
+
+        /// <summary>
+        /// Pops the top view controller.
+        /// </summary>
+        /// <returns>The view controller.</returns>
+        /// <param name="animated">If set to <c>true</c> animated.</param>
+        public override UIViewController PopViewController( bool animated )
+        {
+            if ( LoadingCancellationTokenSource != null )
+            {
+                LoadingCancellationTokenSource.Cancel();
+                LoadingCancellationTokenSource = null;
+                HideLoading();
+
+                return null;
+            }
+
+            return base.PopViewController( animated );
         }
 
         #endregion
@@ -229,7 +232,7 @@ namespace Crex.tvOS.ViewControllers
             newViewController.Data = action.Data.ToJson();
             try
             {
-                await Task.Delay( 2000 );
+                await Task.Delay( 4000 );
                 await newViewController.LoadContentAsync();
             }
             catch
