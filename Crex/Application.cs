@@ -94,6 +94,23 @@ namespace Crex
         }
 
         /// <summary>
+        /// Gets the absolute URL for a given URL.
+        /// </summary>
+        /// <returns>The absolute URL.</returns>
+        /// <param name="url">The url to be processed.</param>
+        public string GetAbsoluteUrl( string url )
+        {
+            if ( url.Contains( "://" ) )
+            {
+                return url;
+            }
+
+            var uri = new Uri( url, UriKind.RelativeOrAbsolute );
+
+            return new Uri( new Uri( Config.ApplicationRootUrl ), uri ).AbsoluteUri;
+        }
+
+        /// <summary>
         /// Runs the application.
         /// </summary>
         /// <param name="sender">The sender.</param>
