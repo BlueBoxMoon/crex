@@ -156,7 +156,15 @@ namespace Crex.tvOS.Templates
             //
             // Load the image and get the button titles.
             //
-            var image = await Utility.LoadImageFromUrlAsync( MenuData.BackgroundImage.BestMatch );
+            UIImage image;
+            try
+            {
+                image = await Utility.LoadImageFromUrlAsync( Crex.Application.Current.GetAbsoluteUrl( MenuData.BackgroundImage.BestMatch ) );
+            }
+            catch
+            {
+                image = null;
+            }
             var buttons = MenuData.Buttons.Select( b => b.Title ).ToList();
 
             LastLoadedDate = DateTime.Now;

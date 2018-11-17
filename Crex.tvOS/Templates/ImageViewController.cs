@@ -44,7 +44,7 @@ namespace Crex.tvOS.Templates
             // Load the image.
             //
             var urlSet = Data.FromJson<Rest.UrlSet>();
-            BackgroundImageView.Image = await Utility.LoadImageFromUrlAsync( urlSet.BestMatch );
+            BackgroundImageView.Image = await Utility.LoadImageFromUrlAsync( Crex.Application.Current.GetAbsoluteUrl( urlSet.BestMatch ) );
         }
 
         #endregion

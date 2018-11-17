@@ -229,9 +229,9 @@ namespace Crex.tvOS.ViewControllers
             // Load the new view controller from the template.
             //
             var newViewController = GetViewControllerForTemplate( action.Template );
-            newViewController.Data = action.Data.ToJson();
             try
             {
+                newViewController.Data = action.Data.ToJson();
                 await newViewController.LoadContentAsync();
             }
             catch

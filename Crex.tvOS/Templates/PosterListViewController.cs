@@ -213,9 +213,16 @@ namespace Crex.tvOS.Templates
             //
             // Load the background image.
             //
-            BackgroundImage = await Utility.LoadImageFromUrlAsync( PosterData.BackgroundImage.BestMatch );
-            BackgroundImage = Utility.ScaleImageToWidth( BackgroundImage, ( int ) ( Crex.Application.Current.Resolution.Width / 2.0f ) );
-            BackgroundImage = Utility.CreateBlurredImage( BackgroundImage, 8 );
+            try
+            {
+                BackgroundImage = await Utility.LoadImageFromUrlAsync( Crex.Application.Current.GetAbsoluteUrl( PosterData.BackgroundImage.BestMatch ) );
+                BackgroundImage = Utility.ScaleImageToWidth( BackgroundImage, ( int ) ( Crex.Application.Current.Resolution.Width / 2.0f ) );
+                BackgroundImage = Utility.CreateBlurredImage( BackgroundImage, 8 );
+            }
+            catch
+            {
+                BackgroundImage = null;
+            }
 
             ListViewImages = new UIImage[PosterData.Items.Count];
             LastLoadedDate = DateTime.Now;
@@ -296,7 +303,7 @@ namespace Crex.tvOS.Templates
                     // Load the image.
                     //
                     var client = new System.Net.Http.HttpClient();
-                    var image = await Utility.LoadImageFromUrlAsync( PosterData.Items[indexPath.Row].Image.BestMatch );
+                    var image = await Utility.LoadImageFromUrlAsync( Crex.Application.Current.GetAbsoluteUrl( PosterData.Items[indexPath.Row].Image.BestMatch ) );
 
                     //
                     // Store the image in our cache.
@@ -313,7 +320,7 @@ namespace Crex.tvOS.Templates
                         for ( int i = 0; i < PosterData.Items.Count; i++ )
                         {
                             var cell = ListView.CellAt( NSIndexPath.FromRowSection( i, 0 ) );
-                            if ( cell.Focused )
+                            if ( cell != null && cell.Focused )
                             {
                                 highlightedIndexPath = NSIndexPath.FromRowSection( i, 0 );
                                 break;

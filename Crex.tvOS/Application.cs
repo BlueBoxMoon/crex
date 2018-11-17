@@ -53,6 +53,8 @@ namespace Crex.tvOS
                 ? ( NavigationController ) sender
                 : ( NavigationController ) ( ( UIViewController ) sender ).NavigationController;
 
+            url = GetAbsoluteUrl( url );
+
             Console.WriteLine( $"Navigation to { url }" );
 
             await navigationController.StartAction( url );
