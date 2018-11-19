@@ -18,7 +18,7 @@ function ReadCrexConfig() as object
   rem --
   rem -- Add in any root config elements.
   rem --
-  config.LoadingSpinner = GetValueOrDefault(config.LoadingSpinner, config.CrexRoot + "Images/spinner.png")
+  config.LoadingSpinner = GetValueOrDefault(config.LoadingSpinner, config.CrexRoot + "Images/crex-default-spinner.png")
   config.ApplicationRootTemplate = GetValueOrDefault(config.ApplicationRootTemplate, "Menu")
   config.AnimationTime = GetValueOrDefault(config.AnimationTime, 0.25)
   config.MenuBarBackgroundColor = GetValueOrDefault(config.MenuBarBackgroundColor, "0x121212B2")
