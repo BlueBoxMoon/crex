@@ -229,7 +229,13 @@ namespace Crex.Android.Activities
             if ( action == null )
             {
                 HideLoading();
-                ShowDataErrorDialog( null );
+                ShowDataErrorDialog( null, () =>
+                {
+                    if ( Fragments.Count == 0 )
+                    {
+                        Finish();
+                    }
+                } );
 
                 return;
             }
@@ -260,7 +266,13 @@ namespace Crex.Android.Activities
             {
                 Console.WriteLine( e.Message );
                 HideLoading();
-                ShowDataErrorDialog( null );
+                ShowDataErrorDialog( null, () =>
+                {
+                    if ( Fragments.Count == 0 )
+                    {
+                        Finish();
+                    }
+                } );
 
                 return;
             }
@@ -429,13 +441,13 @@ namespace Crex.Android.Activities
         /// <summary>
         /// Shows the update required dialog.
         /// </summary>
-        protected void ShowDataErrorDialog( Action retry )
+        protected void ShowDataErrorDialog( Action retry, Action cancel = null )
         {
             var builder = new AlertDialog.Builder( this, global::Android.Resource.Style.ThemeDeviceDefaultDialogAlert );
 
             builder.SetTitle( "Error loading data" )
                    .SetMessage( "An error occurred trying to load the content. Please try again later." )
-                   .SetOnCancelListener( new Dialogs.OnCancelAction( () => { } ) );
+                   .SetOnCancelListener( new Dialogs.OnCancelAction( () => { cancel?.Invoke(); } ) );
 
             if ( retry != null )
             {
