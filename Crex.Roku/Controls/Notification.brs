@@ -29,39 +29,39 @@ sub init()
     rem --
     rem -- Configure for 1920x1080.
     rem -- ratio 8:1
-    m.rBackground.translation = [0, -225]
+    m.rBackground.translation = [0, -240]
     m.rBackground.width = 1920
-    m.rBackground.height = 225
-    m.aSlideValue.keyValue = [[0, -225], [0, 0]]
-    m.pImage.translation = [45, 45]
-    m.pImage.width = 240
-    m.pImage.height = 135
-    m.lMessage.translation = [330, 45]
-    m.lMessage.width = 1260
-    m.lMessage.height = 135
-    m.lMessage.font.size = 33
-    m.lMessage.lineSpacing = 12
-    m.bDismiss.translation = [1635, 134]
-    m.bDismiss.width = 240
+    m.rBackground.height = 240
+    m.aSlideValue.keyValue = [[0, -240], [0, 0]]
+    m.pImage.translation = [40, 40]
+    m.pImage.width = 288
+    m.pImage.height = 162
+    m.lMessage.translation = [368, 40]
+    m.lMessage.width = 1184
+    m.lMessage.height = 162
+    m.lMessage.font.size = 32
+    m.lMessage.lineSpacing = 8
+    m.bDismiss.translation = [1594, 136]
+    m.bDismiss.width = 288
     m.bDismiss.height = 64
   else
     rem --
     rem -- Configure for 1280x720.
     rem --
-    m.rBackground.translation = [0, -150]
+    m.rBackground.translation = [0, -160]
     m.rBackground.width = 1280
-    m.rBackground.height = 150
-    m.aSlideValue.keyValue = [[0, -150], [0, 0]]
-    m.pImage.translation = [30, 30]
-    m.pImage.width = 160
-    m.pImage.height = 90
-    m.lMessage.translation = [220, 30]
-    m.lMessage.width = 840
-    m.lMessage.height = 90
-    m.lMessage.font.size = 22
+    m.rBackground.height = 160
+    m.aSlideValue.keyValue = [[0, -160], [0, 0]]
+    m.pImage.translation = [26, 26]
+    m.pImage.width = 192
+    m.pImage.height = 108
+    m.lMessage.translation = [244, 26]
+    m.lMessage.width = 792
+    m.lMessage.height = 108
+    m.lMessage.font.size = 21
     m.lMessage.lineSpacing = 8
-    m.bDismiss.translation = [1090, 78]
-    m.bDismiss.width = 160
+    m.bDismiss.translation = [1062, 92]
+    m.bDismiss.width = 192
     m.bDismiss.height = 42
   end if
 

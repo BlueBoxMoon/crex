@@ -75,7 +75,7 @@ namespace Crex.tvOS.ViewControllers
 
             View.AutoresizingMask = UIViewAutoresizing.None;
             View.AutosizesSubviews = false;
-            View.Frame = new CGRect( 0, -225, 1920, 225 );
+            View.Frame = new CGRect( 0, -240, 1920, 240 );
             View.BackgroundColor = "#d0323232".AsUIColor();
         }
 
@@ -89,7 +89,7 @@ namespace Crex.tvOS.ViewControllers
             //
             // Create the image view.
             //
-            ImageView = new UIImageView( new CGRect( 45, 45, 240, 135 ) )
+            ImageView = new UIImageView( new CGRect( 40, 40, 288, 162 ) )
             {
                 ContentMode = UIViewContentMode.ScaleAspectFit
             };
@@ -98,9 +98,9 @@ namespace Crex.tvOS.ViewControllers
             //
             // Create the message text area.
             //
-            MessageLabel = new UILabel( new CGRect( 330, 45, 1260, 135 ) )
+            MessageLabel = new UILabel( new CGRect( 368, 40, 1184, 162 ) )
             {
-                Lines = 3,
+                Lines = 4,
                 LineBreakMode = UILineBreakMode.TailTruncation,
                 TextAlignment = UITextAlignment.Center,
                 TextColor = "#ffdddddd".AsUIColor(),
@@ -111,7 +111,7 @@ namespace Crex.tvOS.ViewControllers
             //
             // Create the dismiss button.
             //
-            DismissButton = new MenuButton( new CGRect( 1635, 134, 240, 64 ) );
+            DismissButton = new MenuButton( new CGRect( 1594, 136, 288, 64 ) );
             DismissButton.SetTitle( "Dismiss", UIControlState.Normal );
             DismissButton.PrimaryActionTriggered += DismissButton_PrimaryActionTriggered;
             View.AddSubview( DismissButton );
@@ -184,7 +184,7 @@ namespace Crex.tvOS.ViewControllers
 
                     try
                     {
-                        image = await Utility.LoadImageFromUrlAsync( notification.Image.BestMatch );
+                        image = await Utility.LoadImageFromUrlAsync( Crex.Application.Current.GetAbsoluteUrl( notification.Image.BestMatch ) );
                     }
                     catch
                     {

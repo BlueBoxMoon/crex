@@ -37,14 +37,14 @@ sub init()
     rem --
     rem -- Configure for 1920x1080.
     rem --
-    m.bsLoading.translation = [912, 492]
+    m.bsLoading.translation = [880, 460]
     m.bsLoading.poster.width = 160
     m.bsLoading.poster.height = 160
   else
     rem --
     rem -- Configure for 1280x720.
     rem --
-    m.bsLoading.translation = [592, 312]
+    m.bsLoading.translation = [587, 304]
     m.bsLoading.poster.width = 106
     m.bsLoading.poster.height = 106
   end if
@@ -279,7 +279,7 @@ sub onTemplateStateChange()
     if m.gViews.getChildCount() > 0
       m.gViews.getChild(m.gViews.getChildCount() - 1).setFocus(true)
     end if
-    
+
     ShowLoadingErrorDialog(false)
   end if
 end sub
