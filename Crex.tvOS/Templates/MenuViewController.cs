@@ -209,6 +209,7 @@ namespace Crex.tvOS.Templates
             //
             // Find the next notification.
             //
+            MenuData.Notifications.ForEach( n => n.StartDateTime = n.StartDateTime.ToLocalTime() );
             var notification = MenuData.Notifications
                                        .Where( n => n.StartDateTime > lastSeenNotification && n.StartDateTime <= now )
                                        .OrderBy( n => n.StartDateTime )
