@@ -123,7 +123,7 @@ namespace Crex.Android.Widgets
             {
                 var button = new MenuButton( Context )
                 {
-                    Text = buttonTitles[i],
+                    Title = buttonTitles[i],
                     Tag = i,
                     LayoutParameters = new LayoutParams( ViewGroup.LayoutParams.WrapContent, Height / 2 )
                 };

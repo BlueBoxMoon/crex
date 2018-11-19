@@ -144,7 +144,7 @@ namespace Crex.Android.Widgets
                     RightMargin = Utility.DipToPixel( 19 ),
                     Gravity = GravityFlags.Bottom | GravityFlags.Right
                 },
-                Text = "Dismiss"
+                Title = "Dismiss"
             };
             DismissButton.Click += DismissButton_Click;
             ContainerView.AddView( DismissButton );

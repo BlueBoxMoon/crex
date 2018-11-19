@@ -40,7 +40,7 @@ sub onSizeChange()
   rem --
   rem -- Set the basic attributes of the button.
   rem --
-  m.lblText.text = m.top.text
+  m.lblText.text = UCase(m.top.text)
   m.lblText.height = m.top.height
   m.lblText.font.size = Int(m.top.height / 2)
   padding = Int(m.top.height / 3)

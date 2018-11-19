@@ -51,6 +51,16 @@ namespace Crex.tvOS.Views
         }
 
         /// <summary>
+        /// Sets the title.
+        /// </summary>
+        /// <param name="title">Title.</param>
+        /// <param name="forState">For state.</param>
+        public override void SetTitle( string title, UIControlState forState )
+        {
+            base.SetTitle( title.ToUpper(), forState );
+        }
+
+        /// <summary>
         /// Focus has changed for this control. Update the background color to
         /// match the style in the config.
         /// </summary>
