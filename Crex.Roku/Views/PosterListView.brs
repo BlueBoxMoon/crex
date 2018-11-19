@@ -20,18 +20,11 @@ sub init()
   m.lItemDetailLeft = m.top.findNode("lItemDetailLeft")
   m.lItemDetailRight = m.top.findNode("lItemDetailRight")
   m.lItemDescription = m.top.findNode("lItemDescription")
-  m.bsLoading = m.top.findNode("bsLoading")
-  m.aFadeSpinner = m.top.findNode("aFadeSpinner")
-  m.aFadeBackground = m.top.findNode("aFadeBackground")
-  m.task = invalid
 
   rem --
   rem -- Configure customized options.
   rem --
   crex = ReadCache(m, "config")
-  m.bsLoading.uri = crex.LoadingSpinner
-  m.aFadeSpinner.duration = crex.AnimationTime
-  m.aFadeBackground.duration = crex.AnimationTime
 
   rem --
   rem -- Configure common resolution options for the view.
@@ -43,8 +36,6 @@ sub init()
   m.pBackgroundImage.height = resolution.height
   m.pBackgroundImage.loadWidth = resolution.width * 0.04
   m.pBackgroundImage.loadHeight = resolution.height * 0.04
-  m.bsLoading.poster.width = 96
-  m.bsLoading.poster.height = 96
 
   rem --
   rem -- Configure resolution-specific settings for the view.
@@ -53,7 +44,6 @@ sub init()
     rem --
     rem -- Configure for 1920x1080.
     rem --
-    m.bsLoading.translation = [912, 492]
     m.lTitle.translation = [80, 60]
     m.lTitle.width = 1760
     m.pItemImage.width = 800
@@ -75,7 +65,6 @@ sub init()
     rem --
     rem -- Configure for 1280x720.
     rem --
-    m.bsLoading.translation = [592, 312]
     m.lTitle.translation = [50, 40]
     m.lTitle.width = 1180
     m.pItemImage.width = 544
@@ -102,7 +91,6 @@ sub init()
   m.pBackgroundImage.observeField("loadStatus", "onBackgroundStatus")
   m.llMenu.observeField("itemFocused", "onItemFocusedChange")
   m.llMenu.observeField("itemSelected", "onItemSelectedChange")
-  m.aFadeSpinner.observeField("state", "onFadeSpinnerState")
 end sub
 
 rem *******************************************************
@@ -117,49 +105,14 @@ rem -- pull our configuration information from. We need to re-download
 rem -- the configuration and apply it to the display elements.
 rem --
 sub onDataChange()
-  rem --
-  rem -- Create a new task or re-use an existing one.
-  rem --
-  if m.task = invalid
-    m.task = CreateObject("roSGNode", "URLTask")
-    m.task.observeField("content", "onContentChange")
-  else
-    m.task.control = "STOP"
-  end if
-
-  rem --
-  rem -- Set the URL for the task to pull content from and start it.
-  rem --
-  m.task.url = ParseJson(m.top.data)
-  m.task.control = "RUN"
-end sub
-
-rem --
-rem -- onContentChange()
-rem --
-rem -- The content from the URLTask has been received. Parse it out
-rem -- and update UI elements.
-rem --
-sub onContentChange()
-  rem --
-  rem -- Attempt to parse the data as JSON.
-  rem --
-  m.config = invalid
-  if m.task.success = true
-    m.config = parseJSON(m.task.content)
-  end if
+  m.config = parseJSON(m.top.data)
 
   if m.config <> invalid
-    if m.config.RequiredCrexVersion <> invalid and m.config.RequiredCrexVersion > GetCrexVersion()
-      ShowUpdateRequiredDialog()
-      return
-    end if
-
     rem --
     rem -- Set the text and background image for the list.
     rem --
     m.lTitle.text = m.config.Title
-    m.pBackgroundImage.uri = BestMatchingUrl(m.config.BackgroundImage)
+    m.pBackgroundImage.uri = GetAbsoluteUrl(BestMatchingUrl(m.config.BackgroundImage))
 
     rem --
     rem -- Remove all the old menu items.
@@ -175,10 +128,8 @@ sub onContentChange()
       node = m.cnMenuContent.createChild("ContentNode")
       node.title = item.Title
     end for
-
-    m.aFadeSpinner.control = "start"
   else
-    LogMessage("Failed to load PosterList content")
+    m.top.templateState = "failed"
   end if
 end sub
 
@@ -194,25 +145,8 @@ sub onBackgroundStatus()
   rem -- to activate during the loading state.
   rem --
   if m.pBackgroundImage.loadStatus = "ready" or m.pBackgroundImage.loadStatus = "failed"
-    rem --
-    rem -- Fade the background image in.
-    rem --
-    m.pBackgroundImage.opacity = 0
-    m.pBackgroundImage.visible = true
-    m.aFadeBackground.control = "start"
-  end if
-end sub
-
-rem --
-rem -- onFadeSpinnerState()
-rem --
-rem -- The spinner fade animation has completed. Make sure the spinner
-rem -- is stopped and no longer visible at all.
-rem --
-sub onFadeSpinnerState()
-  if m.aFadeSpinner.state = "stopped"
-    m.bsLoading.control = "stop"
-    m.bsLoading.visible = false
+    LogMessage(m.pBackgroundImage.loadStatus)
+    m.top.templateState = "ready"
   end if
 end sub
 
@@ -236,7 +170,7 @@ rem -- of the currently focused item.
 rem --
 sub onItemFocusedChange()
   if m.config <> invalid
-    m.pItemImage.uri = m.config.Items[m.llMenu.itemFocused].Image
+    m.pItemImage.uri = GetAbsoluteUrl(BestMatchingUrl(m.config.Items[m.llMenu.itemFocused].Image))
     m.lItemDetailLeft.text = m.config.Items[m.llMenu.itemFocused].DetailLeft
     m.lItemDetailRight.text = m.config.Items[m.llMenu.itemFocused].DetailRight
     m.lItemDescription.text = m.config.Items[m.llMenu.itemFocused].Description
@@ -251,5 +185,5 @@ rem --
 sub onItemSelectedChange()
   item = m.config.Items[m.llMenu.itemSelected]
 
-  m.top.crexScene.callFunc("ShowItem", item.Action)
+  m.top.crexScene.callFunc("ShowItem", item.ActionUrl)
 end sub

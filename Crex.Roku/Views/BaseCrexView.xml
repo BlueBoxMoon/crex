@@ -4,6 +4,7 @@
 
   <interface>
     <field id="crexScene" type="node" />
+    <field id="templateState" type="string" />
     <function name="willShowView" />
   </interface>
 

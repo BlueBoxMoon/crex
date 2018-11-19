@@ -51,6 +51,10 @@ sub runRequest()
     rem -- Check to be sure we got the expected response type.
     rem --
     if type(event) = "roUrlEvent"
+      if m.top.cancel = true
+        return
+      end if
+      
       rem --
       rem -- Check the response code to ensure we got a success
       rem -- response.

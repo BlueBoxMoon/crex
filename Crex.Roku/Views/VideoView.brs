@@ -98,6 +98,8 @@ sub onDataChange()
     m.format = "mp4"
   end if
 
+  m.top.templateState = "ready"
+  
   lastVideoState = ReadCache(m, "lastVideoState")
   if lastVideoState <> invalid
     lastVideoUri = lastVideoState.Split("|")[0]

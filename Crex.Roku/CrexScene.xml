@@ -3,6 +3,8 @@
   <children>
     <Group id="gViews" />
 
+    <BusySpinner id="bsLoading" />
+
     <Animation id="aFadeView" duration="0.25" repeat="false" easeFunction="linear" />
   </children>
 

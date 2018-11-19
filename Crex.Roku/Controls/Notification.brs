@@ -92,7 +92,7 @@ sub onNotificationChange()
     m.top.state = "visible"
   else
     m.pImage.uri = ""
-    m.pImage.uri = BestMatchingUrl(m.top.notification.Image)
+    m.pImage.uri = GetAbsoluteUrl(BestMatchingUrl(m.top.notification.Image))
     m.pImage.visible = true
   end if
 end sub

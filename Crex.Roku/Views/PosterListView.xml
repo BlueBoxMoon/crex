@@ -13,15 +13,6 @@
     <LabelList id="llMenu" numRows="10">
       <ContentNode id="cnMenuContent" role="content" />
     </LabelList>
-
-    <BusySpinner id="bsLoading" />
-
-    <Animation id="aFadeSpinner" duration="0.25" repeat="false" easeFunction="linear">
-      <FloatFieldInterpolator id="aFadeSpinnerValue" key="[0.0, 1.0]" keyValue="[1, 0]" fieldToInterp="bsLoading.opacity" />
-    </Animation>
-    <Animation id="aFadeBackground" duration="0.25" repeat="false" easeFunction="linear">
-      <FloatFieldInterpolator id="aFadeBackgroundValue" key="[0.0, 1.0]" keyValue="[0, 0.25]" fieldToInterp="pBackgroundImage.opacity" />
-    </Animation>
   </children>
 
   <interface>

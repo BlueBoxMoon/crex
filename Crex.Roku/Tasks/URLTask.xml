@@ -3,6 +3,7 @@
   <interface>
     <field id="url" type="string" />
     <field id="timeout" type="integer" value="10000" />
+    <field id="cancel" type="boolean" value="false" />
 
     <field id="success" type="boolean" />
     <field id="responseCode" type="integer" />

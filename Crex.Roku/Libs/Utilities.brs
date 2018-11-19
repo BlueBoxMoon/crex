@@ -191,6 +191,11 @@ end function
 rem --
 rem -- BestMatchingUrl(urlset)
 rem --
+rem -- Gets the best matching URL for our resolution.
+rem --
+rem -- @param urlset The UrlSet object that contains the various URL options.
+rem -- @returns The best URL that can be used by us.
+rem --
 function BestMatchingUrl(urlset as object) as string
   height = m.top.getScene().currentDesignResolution.height
   if height >= 2160
@@ -212,6 +217,31 @@ end function
 
 
 rem --
+rem -- GetAbsoluteUrl(url)
+rem --
+rem -- If the passed string is a relative URL then convert it to
+rem -- an absolute URL by using our ApplicationRootUrl.
+rem --
+rem -- @param url The URL to make sure it is an absolute URL.
+rem -- @returns An absolute URL string.
+rem --
+function GetAbsoluteUrl(url as string) as string
+  if url.InStr(0, "://") <> -1
+    return url
+  end if
+
+  crex = ReadCache(m, "config")
+  baseUrl = crex.ApplicationRootUrl.Split("/")
+
+  if url.InStr(0, "/") = 0
+    return baseUrl[0] + "//" + baseUrl[2] + url
+  else
+    return baseUrl[0] + "//" + baseUrl[2] + "/" + url
+  end if
+end function
+
+
+rem --
 rem -- ShowUpdateRequiredDialog(popOnClose)
 rem --
 rem -- Show a dialog that tells the user an update is required.
@@ -221,7 +251,7 @@ sub ShowUpdateRequiredDialog(popOnClose = true)
   dialog.title = "Update Required"
   dialog.message = "An update is required to view this content."
   if popOnClose = true
-    dialog.observeField("wasClosed", "onUpdateRequiredDialogClosed")
+    dialog.observeField("wasClosed", "onDialogClosedPop")
   end if
 
   if m.top.crexScene <> invalid
@@ -233,12 +263,33 @@ end sub
 
 
 rem --
-rem -- onUpdateRequiredDialogClosed()
+rem -- ShowLoadingErrorDialog(popOnClose)
+rem --
+rem -- Show a dialog that tells the user we had an error loading data.
+rem --
+sub ShowLoadingErrorDialog(popOnClose = true)
+  dialog = createObject("roSGNode", "Dialog")
+  dialog.title = "Error Loading Data"
+  dialog.message = "An error occurred trying to load the content. Please try again later."
+  if popOnClose = true
+    dialog.observeField("wasClosed", "onDialogClosedPop")
+  end if
+
+  if m.top.crexScene <> invalid
+    m.top.crexScene.dialog = dialog
+  else
+    m.top.dialog = dialog
+  end if
+end sub
+
+
+rem --
+rem -- onDialogClosedPop()
 rem --
 rem -- If the pop on close option was specified for the update required
 rem -- dialog then pop the active view.
 rem --
-sub onUpdateRequiredDialogClosed()
+sub onDialogClosedPop()
   if m.top.crexScene <> invalid
     m.top.crexScene.callFunc("PopActiveView")
   else

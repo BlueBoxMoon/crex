@@ -9,20 +9,14 @@ sub init()
   rem --
   rem -- Set initial control values.
   rem --
-  m.gMainMenu = m.top.findNode("gMainMenu")
   m.pBackground = m.top.findNode("pBackground")
   m.mbMenuBar = m.top.findNode("mbMenuBar")
   m.nNotification = m.top.findNode("nNotification")
-  m.bsLoading = m.top.findNode("bsLoading")
-  m.aFadeMenu = m.top.findNode("aFadeMenu")
-  m.task = invalid
 
   rem --
   rem -- Configure any customized settings.
   rem --
   crex = ReadCache(m, "config")
-  m.bsLoading.uri = crex.LoadingSpinner
-  m.aFadeMenu.duration = crex.AnimationTime
 
   rem --
   rem -- Configure UI elements for the screen size we are running.
@@ -37,9 +31,6 @@ sub init()
     m.mbMenuBar.translation = [0, 960]
     m.mbMenuBar.width = 1920
     m.mbMenuBar.height = 120
-    m.bsLoading.translation = [912, 492]
-    m.bsLoading.poster.width = 160
-    m.bsLoading.poster.height = 160
   else
     rem --
     rem -- Configure for 1280x720.
@@ -47,9 +38,6 @@ sub init()
     m.mbMenuBar.translation = [0, 640]
     m.mbMenuBar.width = 1280
     m.mbMenuBar.height = 80
-    m.bsLoading.translation = [592, 312]
-    m.bsLoading.poster.width = 106
-    m.bsLoading.poster.height = 106
   end if
 
   rem --
@@ -58,13 +46,10 @@ sub init()
   m.top.observeField("focusedChild", "onFocusedChildChange")
   m.pBackground.observeField("loadStatus", "onBackgroundStatus")
   m.mbMenuBar.observeField("selectedButtonIndex", "onSelectedButtonIndex")
-  m.aFadeMenu.observeField("state", "onFadeMenuState")
   m.nNotification.observeField("state", "onNotificationStateChange")
 
-  rem --
-  rem -- Show the loading spinner.
-  rem --
-  m.bsLoading.control = "start"
+  rem TODO: Remove for production
+  RegistryWrite("Crex", "LastSeenNotification", "")
 end sub
 
 rem *******************************************************
@@ -79,10 +64,6 @@ rem -- notification must have a date that is later than the last seen
 rem -- notification and also before now.
 rem --
 sub showNextNotification()
-  if m.config.Notifications = invalid
-    return
-  end if
-
   lastNotification = RegistryRead("Crex", "LastSeenNotification")
   if lastNotification <> invalid
     lastNotification = Val(lastNotification, 10)
@@ -122,7 +103,6 @@ sub onNotificationStateChange()
   end if
 end sub
 
-
 rem --
 rem -- onDataChange()
 rem --
@@ -130,33 +110,9 @@ rem -- Called when the data has been changed to a new value. Load the
 rem -- content from the new URL specified by the data.
 rem --
 sub onDataChange()
-  m.task = CreateObject("roSGNode", "URLTask")
-  m.task.url = ParseJson(m.top.data)
-  m.task.observeField("content", "onContentChanged")
-  m.task.control = "RUN"
-end sub
-
-rem --
-rem -- onContentChanged()
-rem --
-rem -- The URL download task has finished and provided content for
-rem -- use to parse. We then populate the UI with the information.
-rem --
-sub onContentChanged()
-  rem --
-  rem -- Try to parse the retrieved content as JSON.
-  rem --
-  m.config = invalid
-  if m.task.success = true
-    m.config = parseJSON(m.task.content)
-  end if
+  m.config = ParseJson(m.top.data)
 
   if m.config <> invalid
-    if m.config.RequiredCrexVersion <> invalid and m.config.RequiredCrexVersion > GetCrexVersion()
-      ShowUpdateRequiredDialog()
-      return
-    end if
-
     rem --
     rem -- Pre-process any notifications to get the date as seconds
     rem --
@@ -164,17 +120,18 @@ sub onContentChanged()
       for each notification in m.config.Notifications
         startDateTime = CreateObject("roDateTime")
         startDateTime.FromISO8601String(notification.StartDateTime)
+        startDateTime.ToLocalTime()
         notification.StartDateTimeSeconds = startDateTime.AsSeconds()
       end for
+
       rem -- This method requires the key be in all lowercase
       m.config.Notifications.SortBy("startdatetimeseconds")
     end if
 
-
     rem --
     rem -- Configure UI elements with the configuration options.
     rem --
-    m.pBackground.uri = BestMatchingUrl(m.config.BackgroundImage)
+    m.pBackground.uri = GetAbsoluteUrl(BestMatchingUrl(m.config.BackgroundImage))
 
     rem --
     rem -- Build a list of buttons provided in the config.
@@ -189,7 +146,7 @@ sub onContentChanged()
     rem --
     m.mbMenuBar.buttons = buttons
   else
-    LogMessage("Failed to load menu content.")
+    m.top.templateState = "failed"
   end if
 end sub
 
@@ -217,31 +174,7 @@ sub onBackgroundStatus()
   rem -- to activate during the loading state.
   rem --
   if m.pBackground.loadStatus = "ready" or m.pBackground.loadStatus = "failed"
-    rem --
-    rem -- Prepare the main menu controls for fading in.
-    rem --
-    m.gMainMenu.opacity = 0
-    m.gMainMenu.visible = true
-    m.mbMenuBar.setFocus(true)
-
-    rem --
-    rem -- Start fading in the menu and fading out the spinner.
-    rem --
-    m.aFadeMenu.control = "start"
-  end if
-end sub
-
-rem --
-rem -- onFadeMenuState()
-rem --
-rem -- The menu fade animation has completed. Make sure the spinner
-rem -- is stopped and no longer visible at all.
-rem --
-sub onFadeMenuState()
-  if m.aFadeMenu.state = "stopped"
-    m.bsLoading.control = "stop"
-    m.bsLoading.visible = false
-
+    m.top.templateState = "ready"
     showNextNotification()
   end if
 end sub
@@ -255,7 +188,7 @@ rem --
 sub onSelectedButtonIndex()
   item = m.config.Buttons[m.mbMenuBar.selectedButtonIndex]
 
-  m.top.crexScene.callFunc("ShowItem", item.Action)
+  m.top.crexScene.callFunc("ShowItem", item.ActionUrl)
 end sub
 
 rem --

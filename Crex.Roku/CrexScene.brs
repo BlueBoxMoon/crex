@@ -10,8 +10,10 @@ sub init()
   rem -- Set initial control values.
   rem --
   m.gViews = m.top.findNode("gViews")
+  m.bsLoading = m.top.findNode("bsLoading")
   m.aFadeView = m.top.findNode("aFadeView")
-  m.config = invalid
+  m.templateTask = invalid
+  m.loadingView = invalid
 
   rem --
   rem -- Load the config file and cache it.
@@ -22,7 +24,30 @@ sub init()
   rem --
   rem -- Set configured values
   rem --
+  m.bsLoading.uri = crex.LoadingSpinner
+  m.bsLoading.visible = false
+  m.bsLoading.control = "stop"
   m.aFadeView.duration = crex.AnimationTime
+
+  rem --
+  rem -- Configure UI elements for the screen size we are running.
+  rem --
+  resolution = m.top.getScene().currentDesignResolution
+  if resolution.resolution = "FHD"
+    rem --
+    rem -- Configure for 1920x1080.
+    rem --
+    m.bsLoading.translation = [912, 492]
+    m.bsLoading.poster.width = 160
+    m.bsLoading.poster.height = 160
+  else
+    rem --
+    rem -- Configure for 1280x720.
+    rem --
+    m.bsLoading.translation = [592, 312]
+    m.bsLoading.poster.width = 106
+    m.bsLoading.poster.height = 106
+  end if
 
   rem --
   rem -- Observe the fields we need to monitor for changes.
@@ -34,7 +59,7 @@ sub init()
   rem --
   rem -- Default template and root url.
   rem --
-  ShowItem({Template: crex.ApplicationRootTemplate, Data: crex.ApplicationRootUrl})
+  ShowItem(crex.ApplicationRootUrl)
 end sub
 
 rem *******************************************************
@@ -143,35 +168,121 @@ sub PopActiveView()
 end sub
 
 rem --
-rem -- ShowItem(item)
+rem -- ShowItem(url)
 rem --
-rem -- Shows an item on screen by parsing the object data and
-rem -- creating the appropriate view to handle the item data.
+rem -- Shows an item on screen by requesting the data in the
+rem -- url supplied.
 rem --
-rem -- @param item The item to be shown.
+rem -- @param url The url that contains the data to be shown.
 rem --
-sub ShowItem(item as Object)
+sub ShowItem(url as String)
+  if m.templateTask <> invalid or m.loadingView <> invalid
+    LogMessage("Tried to ShowItem while already loading.")
+    return
+  end if
+
+  rem --
+  rem -- Show the loading spinner.
+  rem --
+  m.bsLoading.control = "start"
+  m.bsLoading.visible = true
+  m.bsLoading.setFocus(true)
+
+  rem --
+  rem -- Start a task to load the URL data.
+  rem --
+  m.templateTask = CreateObject("roSGNode", "URLTask")
+  m.templateTask.url = GetAbsoluteUrl(url)
+  m.templateTask.observeField("content", "onTemplateTaskChanged")
+  m.templateTask.control = "RUN"
+end sub
+
+rem --
+rem -- ShowTemplate(url)
+rem --
+rem -- Shows a template from the data provided.
+rem --
+rem -- @param item The object that contains the templte and data.
+rem --
+sub ShowTemplate(item as Object)
   rem --
   rem -- Each item should have a Template and Url property.
   rem --
   if item.Template <> invalid and item.Data <> invalid
-    LogMessage("Navigation to " + FormatJson(item))
-
     if item.RequiredCrexVersion <> invalid and item.RequiredCrexVersion > GetCrexVersion()
       ShowUpdateRequiredDialog(false)
       return
     end if
 
-    view = CreateObject("roSGNode", item.Template + "View")
-    view.crexScene = m.top
-    view.data = FormatJson(item.Data)
-    PushView(view)
+    m.loadingView = CreateObject("roSGNode", item.Template + "View")
+    m.loadingView.crexScene = m.top
+    m.loadingView.observeField("templateState", "onTemplateStateChange")
+    m.loadingView.data = FormatJson(item.Data)
+  else
+    m.bsLoading.control = "stop"
+    m.bsLoading.visible = false
+    if m.gViews.getChildCount() > 0
+      m.gViews.getChild(m.gViews.getChildCount() - 1).setFocus(true)
+    end if
+
+    ShowLoadingErrorDialog(false)
   end if
 end sub
 
 rem *******************************************************
 rem ** EVENT HANDLERS
 rem *******************************************************
+
+rem --
+rem -- onTemplateTaskChanged()
+rem --
+rem -- The URL download task has finished and provided content for
+rem -- use to parse.
+rem --
+sub onTemplateTaskChanged()
+  rem --
+  rem -- Try to parse the retrieved content as JSON.
+  rem --
+  data = invalid
+  if m.templateTask.success = true
+    data = parseJSON(m.templateTask.content)
+  end if
+  m.templateTask = invalid
+
+  if data <> invalid
+    ShowTemplate(data)
+  else
+    if m.gViews.getChildCount() > 0
+      m.gViews.getChild(m.gViews.getChildCount() - 1).setFocus(true)
+    end if
+
+    ShowLoadingErrorDialog(false)
+  end if
+end sub
+
+rem --
+rem -- onTemplateStateChange()
+rem --
+rem -- The template has indicated that it is either fully
+rem -- loaded or has failed to load.
+rem --
+sub onTemplateStateChange()
+  m.bsLoading.control = "stop"
+  m.bsLoading.visible = false
+  loadingView = m.loadingView
+  m.loadingView.unobserveField("templateState")
+  m.loadingView = invalid
+
+  if loadingView.templateState = "ready"
+    PushView(loadingView)
+  else
+    if m.gViews.getChildCount() > 0
+      m.gViews.getChild(m.gViews.getChildCount() - 1).setFocus(true)
+    end if
+    
+    ShowLoadingErrorDialog(false)
+  end if
+end sub
 
 rem --
 rem -- onFadeViewState()
@@ -224,6 +335,36 @@ function onKeyEvent(key as string, press as boolean) as boolean
 
   if press
     if key = "back"
+      rem --
+      rem -- If we don't have any views visible yet just let
+      rem -- the app exit.
+      rem --
+      if m.gViews.getChildCount() = 0
+        return false
+      end if
+
+      rem --
+      rem -- If we are loading the URL, cancel.
+      rem --
+      if m.templateTask <> invalid
+        m.templateTask.cancel = true
+        m.bsLoading.visible = false
+        m.bsLoading.control = "stop"
+        m.gViews.getChild(m.gViews.getChildCount() - 1).setFocus(true)
+        return true
+      end if
+
+      rem --
+      rem -- If we are waiting for the view to enter ready state, cancel.
+      rem --
+      if m.loadingView <> invalid
+        m.loadingView = invalid
+        m.bsLoading.visible = false
+        m.bsLoading.control = "stop"
+        m.gViews.getChild(m.gViews.getChildCount() - 1).setFocus(true)
+        return true
+      end if
+
       rem --
       rem -- If the back button was pressed and we have views on
       rem -- the stack, then pop the active view. Otherwise allow

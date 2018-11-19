@@ -5,6 +5,7 @@ rem -- Initialize a new instance of the Base Crex View. This class should
 rem -- not be instantiated directly.
 rem --
 sub init()
+  m.top.templateState = "loading"
 end sub
 
 rem --
