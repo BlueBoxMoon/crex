@@ -28,8 +28,8 @@ namespace Crex.Extensions
             // Find the next notification.
             //
             return notifications
-                .Where( n => n.StartDateTime > lastSeenNotification && n.StartDateTime <= now )
-                .OrderBy( n => n.StartDateTime )
+                .Where( n => n.StartDateTime.ToLocalTime() > lastSeenNotification && n.StartDateTime.ToLocalTime() <= now )
+                .OrderBy( n => n.StartDateTime.ToLocalTime() )
                 .FirstOrDefault();
         }
     }

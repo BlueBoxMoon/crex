@@ -178,6 +178,7 @@ namespace Crex.Android.Templates
                 Ellipsize = global::Android.Text.TextUtils.TruncateAt.End
             };
             DescriptionView.SetMaxLines( 8 );
+            DescriptionView.SetLines( 8 );
             DescriptionView.SetSingleLine( false );
             layout.AddView( DescriptionView );
 

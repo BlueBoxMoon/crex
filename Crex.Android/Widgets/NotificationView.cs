@@ -248,7 +248,7 @@ namespace Crex.Android.Widgets
 
                     try
                     {
-                        image = await Utility.LoadImageFromUrlAsync( notification.Image.BestMatch );
+                        image = await Utility.LoadImageFromUrlAsync( Crex.Application.Current.GetAbsoluteUrl( notification.Image.BestMatch ) );
                     }
                     catch
                     {
@@ -281,7 +281,7 @@ namespace Crex.Android.Widgets
         /// <exception cref="NotImplementedException"></exception>
         private void DismissButton_Click( object sender, EventArgs e )
         {
-            Crex.Application.Current.Preferences.SetDateTimeValue( "Crex.LastSeenNotification", Notification.StartDateTime );
+            Crex.Application.Current.Preferences.SetDateTimeValue( "Crex.LastSeenNotification", Notification.StartDateTime.ToLocalTime() );
             HideCurrentNotification();
         }
 
