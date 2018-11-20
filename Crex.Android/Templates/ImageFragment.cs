@@ -76,7 +76,7 @@ namespace Crex.Android.Templates
             //
             // Load the background image.
             //
-            BackgroundImage = await Utility.LoadImageFromUrlAsync( urlSet.BestMatch );
+            BackgroundImage = await Utility.LoadImageFromUrlAsync( Crex.Application.Current.GetAbsoluteUrl( urlSet.BestMatch ) );
 
             if ( Activity != null )
             {

@@ -149,7 +149,7 @@ namespace Crex.Android.Templates
             //
             // Load the background image and prepate the menu buttons.
             //
-            BackgroundImage = await Utility.LoadImageFromUrlAsync( MenuData.BackgroundImage.BestMatch );
+            BackgroundImage = await Utility.LoadImageFromUrlAsync( Crex.Application.Current.GetAbsoluteUrl( MenuData.BackgroundImage.BestMatch ) );
 
             if ( Activity != null )
             {

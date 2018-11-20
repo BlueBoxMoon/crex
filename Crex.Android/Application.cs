@@ -41,6 +41,8 @@ namespace Crex.Android
         /// <param name="url">The url to the action to be started.</param>
         public override async Task StartAction( object sender, string url )
         {
+            url = GetAbsoluteUrl( url );
+
             Console.WriteLine( $"Navigation to { url }" );
 
             await CrexActivity.MainActivity.StartAction( url );
