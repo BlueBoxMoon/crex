@@ -189,7 +189,8 @@ namespace Crex.Android.Activities
             //
             // Retrieve the data from the server.
             //
-            var json = await new System.Net.Http.HttpClient().GetStringAsync( url );
+            // TODO: Temporary fix until https://github.com/xamarin/xamarin-android/issues/1923 is resolved.
+            var json = await new System.Net.Http.HttpClient(new System.Net.Http.HttpClientHandler()).GetStringAsync( url );
             var action = json.FromJson<Rest.CrexAction>();
 
             cancellationToken.ThrowIfCancellationRequested();
