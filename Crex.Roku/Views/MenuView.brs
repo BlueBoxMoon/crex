@@ -73,13 +73,15 @@ sub showNextNotification()
 
   now = CreateObject("roDateTime").AsSeconds()
 
-  for each notification in m.config.Notifications
-    if notification.StartDateTimeSeconds > lastNotification and notification.StartDateTimeSeconds <= now
-      m.nNotification.visible = true
-      m.nNotification.notification = notification
-      return
-    end if
-  end for
+  if m.config.Notifications <> invalid
+    for each notification in m.config.Notifications
+      if notification.StartDateTimeSeconds > lastNotification and notification.StartDateTimeSeconds <= now
+        m.nNotification.visible = true
+        m.nNotification.notification = notification
+        return
+      end if
+    end for
+  end if
 end sub
 
 rem *******************************************************

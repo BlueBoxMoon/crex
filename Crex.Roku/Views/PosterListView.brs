@@ -169,11 +169,16 @@ rem -- The menu item focus has changed. Update the UI with the details
 rem -- of the currently focused item.
 rem --
 sub onItemFocusedChange()
-  if m.config <> invalid
+  if m.config <> invalid and m.llMenu.itemFocused <> -1
     m.pItemImage.uri = GetAbsoluteUrl(BestMatchingUrl(m.config.Items[m.llMenu.itemFocused].Image))
     m.lItemDetailLeft.text = m.config.Items[m.llMenu.itemFocused].DetailLeft
     m.lItemDetailRight.text = m.config.Items[m.llMenu.itemFocused].DetailRight
     m.lItemDescription.text = m.config.Items[m.llMenu.itemFocused].Description
+  else
+    m.pItemImage.uri = ""
+    m.lItemDetailLeft.text = ""
+    m.lItemDetailRight.text = ""
+    m.lItemDescription.text = ""
   end if
 end sub
 

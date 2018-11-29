@@ -197,6 +197,10 @@ rem -- @param urlset The UrlSet object that contains the various URL options.
 rem -- @returns The best URL that can be used by us.
 rem --
 function BestMatchingUrl(urlset as object) as string
+  if urlset = Invalid
+    return ""
+  end if
+
   height = m.top.getScene().currentDesignResolution.height
   if height >= 2160
     images = [urlset.UHD, urlset.FHD, urlset.HD]
