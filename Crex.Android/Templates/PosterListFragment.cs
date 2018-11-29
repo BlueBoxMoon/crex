@@ -245,9 +245,12 @@ namespace Crex.Android.Templates
             //
             // Load the background image and prepate the menu buttons.
             //
-            BackgroundImage = await Utility.LoadImageFromUrlAsync( Crex.Application.Current.GetAbsoluteUrl( PosterData.BackgroundImage.BestMatch ) );
-            BackgroundImage = Utility.ScaleImageToWidth( BackgroundImage, ( int ) ( Crex.Application.Current.Resolution.Width / 2.0f ) );
-            BackgroundImage = Utility.CreateBlurredImage( BackgroundImage, 8 );
+            BackgroundImage = await Utility.LoadImageFromUrlAsync( Crex.Application.Current.GetAbsoluteUrl( PosterData.BackgroundImage?.BestMatch ) );
+            if ( BackgroundImage != null )
+            {
+                BackgroundImage = Utility.ScaleImageToWidth( BackgroundImage, ( int ) ( Crex.Application.Current.Resolution.Width / 2.0f ) );
+                BackgroundImage = Utility.CreateBlurredImage( BackgroundImage, 8 );
+            }
 
             if ( Activity != null )
             {

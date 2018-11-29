@@ -17,6 +17,11 @@ namespace Crex.Android
         /// <returns>An awaitable task that will return the Bitmap image or an error.</returns>
         public static async Task<Bitmap> LoadImageFromUrlAsync( string url )
         {
+            if ( string.IsNullOrWhiteSpace( url ) )
+            {
+                return null;
+            }
+
             var client = new System.Net.Http.HttpClient();
             var imageTask = client.GetAsync( url );
 

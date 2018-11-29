@@ -100,7 +100,7 @@ namespace Crex
         /// <param name="url">The url to be processed.</param>
         public string GetAbsoluteUrl( string url )
         {
-            if ( url.Contains( "://" ) )
+            if ( url == null || url.Contains( "://" ) )
             {
                 return url;
             }
