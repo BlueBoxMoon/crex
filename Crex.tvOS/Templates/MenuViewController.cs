@@ -114,8 +114,6 @@ namespace Crex.tvOS.Templates
         /// <param name="animated">If set to <c>true</c> animated.</param>
         public override void ViewWillAppear( bool animated )
         {
-            // TODO: Remove!
-            NSUserDefaults.StandardUserDefaults.SetString( "", "Crex.LastSeenNotification" );
             base.ViewWillAppear( animated );
 
             if ( DateTime.Now.Subtract( LastLoadedDate ).TotalSeconds > Crex.Application.Current.Config.ContentCacheTime.Value )

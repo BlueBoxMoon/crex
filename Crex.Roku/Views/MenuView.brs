@@ -47,9 +47,6 @@ sub init()
   m.pBackground.observeField("loadStatus", "onBackgroundStatus")
   m.mbMenuBar.observeField("selectedButtonIndex", "onSelectedButtonIndex")
   m.nNotification.observeField("state", "onNotificationStateChange")
-
-  rem TODO: Remove for production
-  RegistryWrite("Crex", "LastSeenNotification", "")
 end sub
 
 rem *******************************************************

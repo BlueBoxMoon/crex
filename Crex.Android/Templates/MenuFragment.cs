@@ -82,7 +82,6 @@ namespace Crex.Android.Templates
             base.OnViewCreated( view, savedInstanceState );
 
             var layout = ( FrameLayout ) view;
-            Crex.Application.Current.Preferences.RemoveValue( "Crex.LastSeenNotification" );
 
             //
             // Setup the background image view.
