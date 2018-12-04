@@ -230,6 +230,7 @@ namespace Crex.Android.Activities
             if ( action == null )
             {
                 HideLoading();
+                LoadingCancellationTokenSource = null;
                 ShowDataErrorDialog( null, () =>
                 {
                     if ( Fragments.Count == 0 )
@@ -267,6 +268,7 @@ namespace Crex.Android.Activities
             {
                 Console.WriteLine( e.Message );
                 HideLoading();
+                LoadingCancellationTokenSource = null;
                 ShowDataErrorDialog( null, () =>
                 {
                     if ( Fragments.Count == 0 )
