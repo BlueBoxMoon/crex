@@ -56,7 +56,6 @@
   <ItemGroup>
     <Compile Include="AndroidPreferences.cs" />
     <Compile Include="Application.cs" />
-    <Compile Include="CrexBaseActivity.cs" />
     <Compile Include="Dialogs\OnCancelAction.cs" />
     <Compile Include="Dialogs\OnClickAction.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
