@@ -112,6 +112,16 @@ namespace Crex.Android
         /// </summary>
         public virtual void OnFragmentDidHide() { }
 
+        /// <summary>
+        /// Dispatches the key event.
+        /// </summary>
+        /// <param name="e">The e.</param>
+        /// <returns></returns>
+        public virtual bool DispatchKeyEvent( KeyEvent e )
+        {
+            return false;
+        }
+
         #endregion
     }
 }

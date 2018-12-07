@@ -151,6 +151,14 @@ namespace Crex.Android.Activities
                 return true;
             }
 
+            if ( Fragments.Any() )
+            {
+                if ( Fragments.Last().DispatchKeyEvent( e ) )
+                {
+                    return true;
+                }
+            }
+
             return base.DispatchKeyEvent( e );
         }
 

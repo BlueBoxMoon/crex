@@ -1,21 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 using Android.App;
-using Android.Content;
-using Android.Media;
 using Android.OS;
-using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Crex.Extensions;
 using Crex.Android.Activities;
+using Com.Google.Android.Exoplayer2;
+using Com.Google.Android.Exoplayer2.Util;
+using Com.Google.Android.Exoplayer2.Upstream;
+using Com.Google.Android.Exoplayer2.Trackselection;
+using Com.Google.Android.Exoplayer2.Source.Hls;
+using Com.Google.Android.Exoplayer2.UI;
+using Com.Google.Android.Exoplayer2.Source;
 
 namespace Crex.Android.Templates
 {
-    public class VideoFragment : CrexBaseFragment
+    public class VideoFragment : CrexBaseFragment, IPlayerEventListener
     {
         #region Views
 
@@ -25,7 +26,7 @@ namespace Crex.Android.Templates
         /// <value>
         /// The video view.
         /// </value>
-        protected VideoView VideoView { get; private set; }
+        protected PlayerView PlayerView { get; private set; }
 
         /// <summary>
         /// Gets the loading spinner view.
@@ -34,6 +35,14 @@ namespace Crex.Android.Templates
         /// The loading spinner view.
         /// </value>
         protected Widgets.LoadingSpinner LoadingSpinnerView { get; private set; }
+
+        /// <summary>
+        /// Gets the player for the current video.
+        /// </summary>
+        /// <value>
+        /// The player for the current video.
+        /// </value>
+        protected SimpleExoPlayer VideoPlayer { get; private set; }
 
         #endregion
 
@@ -53,7 +62,7 @@ namespace Crex.Android.Templates
         /// <value>
         /// The last position of playback for the LastUrl.
         /// </value>
-        private static int? LastPosition { get; set; }
+        private static long? LastPosition { get; set; }
 
         /// <summary>
         /// Gets or sets the playback position when the stream is ready.
@@ -61,7 +70,15 @@ namespace Crex.Android.Templates
         /// <value>
         /// The playback position when the stream is ready.
         /// </value>
-        private int? PlaybackAtPosition { get; set; }
+        private long? PlaybackAtPosition { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [automatic play].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [automatic play]; otherwise, <c>false</c>.
+        /// </value>
+        private bool AutoPlay { get; set; } = true;
 
         #endregion
 
@@ -79,14 +96,13 @@ namespace Crex.Android.Templates
             //
             // Initialize the video view.
             //
-            VideoView = new VideoView( Activity )
+            PlayerView = new PlayerView( Activity )
             {
-                LayoutParameters = new FrameLayout.LayoutParams( ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent )
+                LayoutParameters = new FrameLayout.LayoutParams( ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent ),
+                UseController = true,
+                ControllerAutoShow = false
             };
-            VideoView.Completion += video_Completion;
-            VideoView.Error += video_Error;
-            VideoView.Prepared += video_Prepared;
-            layout.AddView( VideoView );
+            layout.AddView( PlayerView );
 
             //
             // Initialize the loading spinner.
@@ -99,10 +115,6 @@ namespace Crex.Android.Templates
                 }
             };
             layout.AddView( LoadingSpinnerView );
-
-            var mediaController = new MediaController( Activity );
-            mediaController.SetAnchorView( VideoView );
-            VideoView.SetMediaController( mediaController );
         }
 
         /// <summary>
@@ -125,6 +137,42 @@ namespace Crex.Android.Templates
         }
 
         /// <summary>
+        /// Dispatches the key event.
+        /// </summary>
+        /// <param name="e">The e.</param>
+        /// <returns>true if the event was handled.</returns>
+        public override bool DispatchKeyEvent( KeyEvent e )
+        {
+            //
+            // If they pressed one of the media control keys and the player
+            // controller is not visible then show the controller and pass on
+            // the key press.
+            //
+            if ( !PlayerView.IsControllerVisible && e.Action == KeyEventActions.Down )
+            {
+                if ( e.KeyCode == Keycode.MediaFastForward || e.KeyCode == Keycode.MediaRewind || e.KeyCode == Keycode.MediaPlayPause )
+                {
+                    PlayerView.ShowController();
+                    return PlayerView.DispatchKeyEvent( e );
+                }
+            }
+
+            //
+            // If they pressed a different key and it wasn't back, then show the controller.
+            //
+            if ( !PlayerView.IsControllerVisible && e.Action == KeyEventActions.Up )
+            {
+                if ( e.KeyCode != Keycode.Back )
+                {
+                    PlayerView.ShowController();
+                    return true;
+                }
+            }
+
+            return base.DispatchKeyEvent( e );
+        }
+
+        /// <summary>
         /// Called as part of the activity lifecycle when an activity is going into
         /// the background, but has not (yet) been killed.
         /// </summary>
@@ -132,13 +180,14 @@ namespace Crex.Android.Templates
         {
             base.OnPause();
 
-            VideoView.Pause();
+            VideoPlayer.PlayWhenReady = false;
+            PlayerView.HideController();
 
             try
             {
                 LastUrl = Data.FromJson<string>();
-                LastPosition = VideoView.CurrentPosition;
-                var duration = VideoView.Duration;
+                LastPosition = VideoPlayer.CurrentPosition;
+                var duration = VideoPlayer.Duration;
 
                 //
                 // Times our in milliseconds.
@@ -204,7 +253,7 @@ namespace Crex.Android.Templates
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <param name="position">The position.</param>
-        private void PlayVideo( string url, int? position )
+        private void PlayVideo( string url, long? position )
         {
             if ( position.HasValue )
             {
@@ -212,31 +261,67 @@ namespace Crex.Android.Templates
             }
 
             LoadingSpinnerView.Start();
-            VideoView.SetVideoURI( global::Android.Net.Uri.Parse( url ) );
+
+            //
+            // Prepare the standard HTTP information for the source.
+            //
+            var mediaUri = global::Android.Net.Uri.Parse( url );
+            var userAgent = Util.GetUserAgent( Activity, "Crex" );
+            var defaultHttpDataSourceFactory = new DefaultHttpDataSourceFactory( userAgent );
+            var defaultDataSourceFactory = new DefaultDataSourceFactory( Activity, null, defaultHttpDataSourceFactory );
+            IMediaSource source;
+
+            //
+            // Determine if this is an HLS or MP4 stream.
+            //
+            if ( mediaUri.Path.EndsWith( ".m3u8" ) || mediaUri.Path.EndsWith( "/hsl" ) )
+            {
+                source = new HlsMediaSource.Factory( defaultDataSourceFactory )
+                    .CreateMediaSource( mediaUri );
+            }
+            else
+            {
+                source = new ExtractorMediaSource.Factory( defaultDataSourceFactory )
+                    .CreateMediaSource( mediaUri );
+            }
+
+            //
+            // Create the player and get it ready for playback.
+            //
+            VideoPlayer = ExoPlayerFactory.NewSimpleInstance( Activity, new DefaultTrackSelector() );
+            VideoPlayer.AddListener( this );
+            PlayerView.Player = VideoPlayer;
+            VideoPlayer.Prepare( source );
         }
 
         #endregion
 
-        #region Events
+        #region IPlayerEventListener
 
         /// <summary>
-        /// Handles the Completion event of the videoView control.
+        /// Called when the loading status for the player has changed.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void video_Completion( object sender, EventArgs e )
+        /// <param name="isLoading">if set to <c>true</c> [is loading].</param>
+        void IPlayerEventListener.OnLoadingChanged( bool isLoading )
         {
-            CrexActivity.MainActivity.PopTopFragment();
+            Console.WriteLine( $"OnLoadingChanged( { isLoading } )" );
+            if ( isLoading && PlaybackAtPosition.HasValue )
+            {
+                VideoPlayer.SeekTo( PlaybackAtPosition.Value );
+            }
+        }
+
+        void IPlayerEventListener.OnPlaybackParametersChanged( PlaybackParameters playbackParameters )
+        {
         }
 
         /// <summary>
-        /// Handles the Error event of the videoView control.
+        /// Called when an error happens during playback.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Android.Media.MediaPlayer.ErrorEventArgs"/> instance containing the event data.</param>
-        private void video_Error( object sender, MediaPlayer.ErrorEventArgs e )
+        /// <param name="error">The error.</param>
+        void IPlayerEventListener.OnPlayerError( ExoPlaybackException error )
         {
-            VideoView.StopPlayback();
+            VideoPlayer.PlayWhenReady = false;
 
             var builder = new AlertDialog.Builder( Activity, global::Android.Resource.Style.ThemeDeviceDefaultDialogAlert );
 
@@ -252,26 +337,59 @@ namespace Crex.Android.Templates
         }
 
         /// <summary>
-        /// Handles the Prepared event of the video control.
+        /// Called when the player's state has changed.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void video_Prepared( object sender, EventArgs e )
+        /// <param name="playWhenReady">if set to <c>true</c> [play when ready].</param>
+        /// <param name="playbackState">State of the playback.</param>
+        void IPlayerEventListener.OnPlayerStateChanged( bool playWhenReady, int playbackState )
         {
-            LoadingSpinnerView.Stop( () =>
+            //
+            // If the video is ready, hide the spinner and start the video.
+            //
+            if ( playbackState == Player.StateReady && AutoPlay )
             {
-                LoadingSpinnerView.Visibility = ViewStates.Invisible;
-                VideoView.LayoutParameters.Width = ViewGroup.LayoutParams.MatchParent;
-                VideoView.LayoutParameters.Height = ViewGroup.LayoutParams.MatchParent;
+                AutoPlay = false;
 
-                if ( PlaybackAtPosition.HasValue )
+                LoadingSpinnerView.Stop( () =>
                 {
-                    VideoView.SeekTo( PlaybackAtPosition.Value );
-                }
+                    LoadingSpinnerView.Visibility = ViewStates.Invisible;
 
-                VideoView.Start();
-                VideoView.RequestFocus();
-            } );
+                    VideoPlayer.PlayWhenReady = true;
+                    PlayerView.ControllerAutoShow = true;
+                } );
+            }
+
+            //
+            // Playback has ended naturally, close this video player.
+            //
+            if ( playbackState == Player.StateEnded )
+            {
+                CrexActivity.MainActivity.PopTopFragment();
+            }
+        }
+
+        void IPlayerEventListener.OnPositionDiscontinuity( int reason )
+        {
+        }
+
+        void IPlayerEventListener.OnRepeatModeChanged( int repeatMode )
+        {
+        }
+
+        void IPlayerEventListener.OnSeekProcessed()
+        {
+        }
+
+        void IPlayerEventListener.OnShuffleModeEnabledChanged( bool shuffleModeEnabled )
+        {
+        }
+
+        void IPlayerEventListener.OnTimelineChanged( Timeline timeline, Java.Lang.Object manifest, int reason )
+        {
+        }
+
+        void IPlayerEventListener.OnTracksChanged( TrackGroupArray trackGroups, TrackSelectionArray trackSelections )
+        {
         }
 
         #endregion
