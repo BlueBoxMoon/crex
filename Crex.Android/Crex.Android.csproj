@@ -79,9 +79,6 @@
     <PackageReference Include="Xam.Plugins.Android.ExoPlayer">
       <Version>2.8.8</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.v7.AppCompat">
-      <Version>27.0.2.1</Version>
-    </PackageReference>
     <PackageReference Include="NuGet.Build.Packaging">
       <Version>0.2.0</Version>
     </PackageReference>
