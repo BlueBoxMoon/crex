@@ -244,7 +244,7 @@ sub onTemplateTaskChanged()
   rem -- Try to parse the retrieved content as JSON.
   rem --
   data = invalid
-  if m.templateTask.success = true
+  if m.templateTask <> invalid and m.templateTask.success = true
     data = parseJSON(m.templateTask.content)
   end if
   m.templateTask = invalid
@@ -348,6 +348,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
       rem --
       if m.templateTask <> invalid
         m.templateTask.cancel = true
+        m.templateTask = invalid
         m.bsLoading.visible = false
         m.bsLoading.control = "stop"
         m.gViews.getChild(m.gViews.getChildCount() - 1).setFocus(true)

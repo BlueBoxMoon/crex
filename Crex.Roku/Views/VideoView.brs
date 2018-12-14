@@ -99,7 +99,7 @@ sub onDataChange()
   end if
 
   m.top.templateState = "ready"
-  
+
   lastVideoState = ReadCache(m, "lastVideoState")
   if lastVideoState <> invalid
     lastVideoUri = lastVideoState.Split("|")[0]
@@ -175,7 +175,9 @@ rem -- @returns True if the key was handled, false otherwise.
 rem --
 function onKeyEvent(key as string, press as boolean) as boolean
   if press = true and key = "back"
-    if m.vVideo.duration > 60
+    if m.vVideo.position > (m.vVideo.duration - 300) or m.vVideo.position < 60
+      WriteCache(m, "lastVideoState", invalid)
+    else
       lastVideoState = ParseJson(m.top.data) + "|" + Int(m.vVideo.position).ToStr()
       WriteCache(m, "lastVideoState", lastVideoState)
     end if
