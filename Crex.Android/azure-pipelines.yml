@@ -22,7 +22,7 @@ steps:
     restoreSolution: '**/*.sln'
 
 - task: XamarinAndroid@1
-  displayName: 'Build Xamarin.Android project Crex.Android/Crex.Android.csproj'
+  displayName: 'Build Crex.Android/Crex.Android.csproj'
   inputs:
     projectFile: Crex.Android/Crex.Android.csproj
     outputDirectory: '$(build.binariesdirectory)/$(BuildConfiguration)'
@@ -41,4 +41,4 @@ steps:
     command: push
     nuGetFeedType: external
     publishFeedCredentials: 'Blue Box Moon'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
