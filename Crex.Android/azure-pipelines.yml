@@ -41,5 +41,4 @@ steps:
     command: push
     nuGetFeedType: external
     publishFeedCredentials: 'Blue Box Moon'
-
-
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
