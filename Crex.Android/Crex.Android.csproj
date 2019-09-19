@@ -18,7 +18,7 @@
     <TargetFrameworkVersion>v8.1</TargetFrameworkVersion>
     <PackOnBuild>true</PackOnBuild>
     <PackageId>Crex.Android</PackageId>
-    <PackageVersion>1.1</PackageVersion>
+    <PackageVersion>1.2</PackageVersion>
     <Authors>Daniel Hazelbaker</Authors>
     <Owners>Daniel Hazelbaker</Owners>
     <Summary>Library for building Android TV Applications for use with a Rock RMS feed.</Summary>
@@ -71,6 +71,7 @@
     <Compile Include="CrexBaseFragment.cs" />
     <Compile Include="Widgets\MenuButton.cs" />
     <Compile Include="Widgets\NotificationView.cs" />
+    <Compile Include="ManifestInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">

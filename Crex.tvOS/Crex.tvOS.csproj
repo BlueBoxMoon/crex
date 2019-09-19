@@ -10,7 +10,7 @@
     <AssemblyName>Crex.tvOS</AssemblyName>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
     <PackageId>Crex.tvOS</PackageId>
-    <PackageVersion>1.1</PackageVersion>
+    <PackageVersion>1.2</PackageVersion>
     <Authors>Daniel Hazelbaker</Authors>
     <Owners>Daniel Hazelbaker</Owners>
     <Summary>Library for building Apple TV Applications for use with a Rock RMS feed.</Summary>

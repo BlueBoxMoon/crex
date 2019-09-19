@@ -13,6 +13,7 @@ using Com.Google.Android.Exoplayer2.Trackselection;
 using Com.Google.Android.Exoplayer2.Source.Hls;
 using Com.Google.Android.Exoplayer2.UI;
 using Com.Google.Android.Exoplayer2.Source;
+using Android.Net.Wifi;
 
 namespace Crex.Android.Templates
 {
@@ -80,6 +81,21 @@ namespace Crex.Android.Templates
         /// </value>
         private bool AutoPlay { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets a value indicating the number of times we have the lock.
+        /// </summary>
+        private int LockCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets a reference to the WakeLock object.
+        /// </summary>
+        private PowerManager.WakeLock WakeLock { get; set; }
+
+        /// <summary>
+        /// Gets or sets a reference to the WifiLock object.
+        /// </summary>
+        private WifiManager.WifiLock WifiLock { get; set; }
+
         #endregion
 
         #region Base Method Overrides
@@ -115,6 +131,12 @@ namespace Crex.Android.Templates
                 }
             };
             layout.AddView( LoadingSpinnerView );
+
+            var powerManager = ( PowerManager ) Activity.GetSystemService( global::Android.Content.Context.PowerService );
+            WakeLock = powerManager.NewWakeLock( WakeLockFlags.Full | WakeLockFlags.OnAfterRelease, "Video Playback:Wake" );
+
+            var wifiManager = ( WifiManager ) Activity.GetSystemService( global::Android.Content.Context.WifiService );
+            WifiLock = wifiManager.CreateWifiLock( global::Android.Net.WifiMode.Full, "Video Playback:Wifi" );
         }
 
         /// <summary>
@@ -123,6 +145,9 @@ namespace Crex.Android.Templates
         public override void OnResume()
         {
             base.OnResume();
+
+            WakeLock.Acquire();
+            WifiLock.Acquire();
 
             var url = Data.FromJson<string>();
 
@@ -179,6 +204,9 @@ namespace Crex.Android.Templates
         public override void OnPause()
         {
             base.OnPause();
+
+            WifiLock.Release();
+            WakeLock.Release();
 
             VideoPlayer.PlayWhenReady = false;
             PlayerView.HideController();
