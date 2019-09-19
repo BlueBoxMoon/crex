@@ -1,5 +1,6 @@
 pool:
   name: Azure Pipelines
+  vmImage: 'VS2017-Win2016'
   demands:
   - MSBuild
   - Xamarin.Android
