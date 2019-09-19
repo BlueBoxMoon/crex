@@ -35,6 +35,8 @@ steps:
     PathtoPublish: '$(build.binariesdirectory)/$(BuildConfiguration)'
   condition: succeededOrFailed()
 
+- script: find '$(Build.ArtifactStagingDirectory)'
+
 - task: NuGetCommand@2
   displayName: 'NuGet Push'
   inputs:
