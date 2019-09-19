@@ -29,13 +29,7 @@ steps:
     configuration: '$(BuildConfiguration)'
     createAppPackage: false
 
-- task: NuGetCommand@2
-  inputs:
-    command: 'pack'
-    packagesToPack: 'Crex.Android/Crex.Android.csproj'
-    packDestination: '$(Build.ArtifactStagingDirectory)'
-
-- script: find '$(Build.ArtifactStagingDirectory)'
+- script: find '$(build.binariesdirectory)/$(BuildConfiguration)'
 
 - task: NuGetCommand@2
   displayName: 'NuGet Push'
@@ -43,4 +37,4 @@ steps:
     command: push
     nuGetFeedType: external
     publishFeedCredentials: 'Blue Box Moon'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+    packagesToPush: '$(build.binariesdirectory)/$(BuildConfiguration)/*.nupkg'
