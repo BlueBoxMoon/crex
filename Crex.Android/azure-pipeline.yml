@@ -1,0 +1,42 @@
+pool:
+  name: Azure Pipelines
+  demands:
+  - MSBuild
+  - Xamarin.Android
+
+variables:
+  BuildConfiguration: 'Release'
+
+steps:
+- task: NuGetToolInstaller@0
+  displayName: 'Use NuGet 4.4.1'
+  inputs:
+    versionSpec: 4.4.1
+
+- task: NuGetCommand@2
+  displayName: 'NuGet restore'
+  inputs:
+    restoreSolution: '**/*.sln'
+
+- task: XamarinAndroid@1
+  displayName: 'Build Xamarin.Android project Crex.Android/Crex.Android.csproj'
+  inputs:
+    projectFile: Crex.Android/Crex.Android.csproj
+    outputDirectory: '$(build.binariesdirectory)/$(BuildConfiguration)'
+    configuration: '$(BuildConfiguration)'
+    createAppPackage: false
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
+  inputs:
+    PathtoPublish: '$(build.binariesdirectory)/$(BuildConfiguration)'
+  condition: succeededOrFailed()
+
+- task: NuGetCommand@2
+  displayName: 'NuGet Push'
+  inputs:
+    command: push
+    nuGetFeedType: external
+    publishFeedCredentials: 'Blue Box Moon'
+
+
