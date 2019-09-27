@@ -66,25 +66,12 @@ namespace Crex.Android.Templates
         private static long? LastPosition { get; set; }
 
         /// <summary>
-        /// Gets or sets the playback position when the stream is ready.
-        /// </summary>
-        /// <value>
-        /// The playback position when the stream is ready.
-        /// </value>
-        private long? PlaybackAtPosition { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [automatic play].
         /// </summary>
         /// <value>
         ///   <c>true</c> if [automatic play]; otherwise, <c>false</c>.
         /// </value>
         private bool AutoPlay { get; set; } = true;
-
-        /// <summary>
-        /// Gets or sets a value indicating the number of times we have the lock.
-        /// </summary>
-        private int LockCount { get; set; }
 
         /// <summary>
         /// Gets or sets a reference to the WakeLock object.
@@ -95,6 +82,11 @@ namespace Crex.Android.Templates
         /// Gets or sets a reference to the WifiLock object.
         /// </summary>
         private WifiManager.WifiLock WifiLock { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating if we should auto resume playback.
+        /// </summary>
+        private long? AutoResumePosition { get; set; }
 
         #endregion
 
@@ -151,7 +143,11 @@ namespace Crex.Android.Templates
 
             var url = Data.FromJson<string>();
 
-            if ( LastUrl == url && LastPosition.HasValue )
+            if ( AutoResumePosition.HasValue )
+            {
+                PlayVideo( url, AutoResumePosition );
+            }
+            else if ( LastUrl == url && LastPosition.HasValue )
             {
                 ShowResumeDialog();
             }
@@ -208,28 +204,37 @@ namespace Crex.Android.Templates
             WifiLock.Release();
             WakeLock.Release();
 
-            VideoPlayer.PlayWhenReady = false;
             PlayerView.HideController();
 
-            try
+            if ( VideoPlayer != null )
             {
-                LastUrl = Data.FromJson<string>();
-                LastPosition = VideoPlayer.CurrentPosition;
-                var duration = VideoPlayer.Duration;
+                VideoPlayer.PlayWhenReady = false;
 
-                //
-                // Times our in milliseconds.
-                //
-                if ( LastPosition > ( duration - 300000 ) || LastPosition < 60000 )
+                try
+                {
+                    LastUrl = Data.FromJson<string>();
+                    LastPosition = VideoPlayer.CurrentPosition;
+                    var duration = VideoPlayer.Duration;
+
+                    //
+                    // Times our in milliseconds.
+                    //
+                    if ( LastPosition > ( duration - 300000 ) || LastPosition < 60000 )
+                    {
+                        LastUrl = null;
+                        LastPosition = null;
+                    }
+
+                    AutoResumePosition = VideoPlayer.CurrentPosition;
+                }
+                catch
                 {
                     LastUrl = null;
                     LastPosition = null;
                 }
-            }
-            catch
-            {
-                LastUrl = null;
-                LastPosition = null;
+
+                VideoPlayer = null;
+                PlayerView.Player = null;
             }
         }
 
@@ -246,8 +251,8 @@ namespace Crex.Android.Templates
 
             builder.SetTitle( "Resume Playback" )
                 .SetMessage( "Do you wish to resume playback where you left off?" )
-                .SetPositiveButton( "Resume", new Dialogs.OnClickAction( ResumePlayback ) )
-                .SetNegativeButton( "Start Over", new Dialogs.OnClickAction( StartPlaybackOver ) )
+                .SetPositiveButton( "Resume", ( sender, args ) => ResumePlayback() )
+                .SetNegativeButton( "Start Over", ( sender, args ) => StartPlaybackOver() )
                 .SetOnCancelListener( new Dialogs.OnCancelAction( CrexActivity.MainActivity.PopTopFragment ) );
 
             Activity.RunOnUiThread( () =>
@@ -283,11 +288,7 @@ namespace Crex.Android.Templates
         /// <param name="position">The position.</param>
         private void PlayVideo( string url, long? position )
         {
-            if ( position.HasValue )
-            {
-                PlaybackAtPosition = position;
-            }
-
+            LoadingSpinnerView.Visibility = ViewStates.Visible;
             LoadingSpinnerView.Start();
 
             //
@@ -302,24 +303,35 @@ namespace Crex.Android.Templates
             //
             // Determine if this is an HLS or MP4 stream.
             //
-            if ( mediaUri.Path.EndsWith( ".m3u8" ) || mediaUri.Path.EndsWith( "/hsl" ) )
+            if ( mediaUri.Path.EndsWith( ".m3u8", StringComparison.InvariantCultureIgnoreCase ) || mediaUri.Path.EndsWith( "/hsl", StringComparison.InvariantCultureIgnoreCase ) )
             {
-                source = new HlsMediaSource.Factory( defaultDataSourceFactory )
-                    .CreateMediaSource( mediaUri );
+                using ( var factory = new HlsMediaSource.Factory( defaultDataSourceFactory ) )
+                {
+                    source = factory.CreateMediaSource( mediaUri );
+                }
             }
             else
             {
-                source = new ExtractorMediaSource.Factory( defaultDataSourceFactory )
-                    .CreateMediaSource( mediaUri );
+                using ( var factory = new ExtractorMediaSource.Factory( defaultDataSourceFactory ) )
+                {
+                    source = factory.CreateMediaSource( mediaUri );
+                }
             }
 
             //
             // Create the player and get it ready for playback.
             //
+            AutoPlay = true;
             VideoPlayer = ExoPlayerFactory.NewSimpleInstance( Activity, new DefaultTrackSelector() );
             VideoPlayer.AddListener( this );
             PlayerView.Player = VideoPlayer;
-            VideoPlayer.Prepare( source );
+
+            if ( position.HasValue )
+            {
+                VideoPlayer.SeekTo( position.Value );
+            }
+
+            VideoPlayer.Prepare( source, !position.HasValue, false );
         }
 
         #endregion
@@ -332,11 +344,6 @@ namespace Crex.Android.Templates
         /// <param name="isLoading">if set to <c>true</c> [is loading].</param>
         void IPlayerEventListener.OnLoadingChanged( bool isLoading )
         {
-            Console.WriteLine( $"OnLoadingChanged( { isLoading } )" );
-            if ( isLoading && PlaybackAtPosition.HasValue )
-            {
-                VideoPlayer.SeekTo( PlaybackAtPosition.Value );
-            }
         }
 
         void IPlayerEventListener.OnPlaybackParametersChanged( PlaybackParameters playbackParameters )
@@ -355,7 +362,7 @@ namespace Crex.Android.Templates
 
             builder.SetTitle( "Video Playback Error" )
                 .SetMessage( "An error occurred trying to play the video." )
-                .SetPositiveButton( "Close", new Dialogs.OnClickAction( CrexActivity.MainActivity.PopTopFragment ) )
+                .SetPositiveButton( "Close", ( sender, args ) => CrexActivity.MainActivity.PopTopFragment() )
                 .SetOnCancelListener( new Dialogs.OnCancelAction( CrexActivity.MainActivity.PopTopFragment ) );
 
             Activity.RunOnUiThread( () =>
